@@ -6,7 +6,7 @@ const port = process.env.PORT || 5000;
 const errorHandler = require("./middleware/errorHandler");
 const testRoutes = require("./routes/v1/test.route");
 
-
+//test
 app.get('/', (req, res) => {
     res.send('Hello world')
 })
