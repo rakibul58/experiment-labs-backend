@@ -8,5 +8,9 @@ router
     .get(userControllers.getAnUserByEmail)
     .post(userControllers.saveAUser);
 
+router
+    .route("/organizationId/:organizationId")
+    .get(userControllers.getAllMentors);
+
 
 module.exports = router;

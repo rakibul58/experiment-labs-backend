@@ -25,3 +25,19 @@ module.exports.saveAUser = async (req, res, next) => {
     res.send(result);
 
 };
+
+
+module.exports.getAllMentors = async (req, res, next) =>{
+
+    const organizationId = req.params.organizationId;
+    const rolesToMatch = ["execution mentor", "expert mentor"];
+    const result = await userCollection.find({
+        $and: [
+            { "organizationId": organizationId },
+            { "role": { $in: rolesToMatch } }
+        ]
+    }).toArray();
+
+    res.send(result);
+    
+}
