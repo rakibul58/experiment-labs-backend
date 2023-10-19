@@ -5,7 +5,7 @@ const router = express.Router();
 
 router
     .route("/")
-    .get(userControllers.getAUserByEmail)
+    .get(userControllers.getAnUserByEmail)
     .post(userControllers.saveAUser);
 
 

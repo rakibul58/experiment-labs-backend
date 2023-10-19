@@ -2,7 +2,7 @@ const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const userCollection = client.db('experiment-labs').collection('users');
 
-module.exports.getAUserByEmail = async (req, res, next) => {
+module.exports.getAnUserByEmail = async (req, res, next) => {
 
     const email = req.query.email;
     const query = { email: email };
