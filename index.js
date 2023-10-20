@@ -11,6 +11,7 @@ const mailRoutes = require("./routes/v1/mail.route");
 const userRoutes = require("./routes/v1/users.route");
 const organizationRoutes = require("./routes/v1/organizations.route");
 const courseRoutes = require("./routes/v1/courses.route");
+const taskRoutes = require("./routes/v1/tasks.route");
 
 
 app.get('/', (req, res) => {
@@ -31,6 +32,7 @@ app.use("/api/v1/sendMail", mailRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/organizations", organizationRoutes);
 app.use("/api/v1/courses", courseRoutes);
+app.use("/api/v1/tasks", taskRoutes);
 
 
 
