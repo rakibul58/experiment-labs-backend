@@ -7,5 +7,9 @@ router
     .route("/")
     .get(courseControllers.getAllCourses);
 
+router
+    .route("/:id")
+    .get(courseControllers.getACourseById);
+
 
 module.exports = router;
