@@ -74,3 +74,11 @@ module.exports.addACourse = async (req, res, next) => {
         "batch": batchResult
     });
 }
+
+
+module.exports.getCoursesByOrganizationId = async (req, res, next) => {
+    const id = req.params.organizationId;
+    const filter = { "organization.organizationId": id };
+    const course = await courseCollection.find(filter).toArray();
+    res.send(course);
+}
