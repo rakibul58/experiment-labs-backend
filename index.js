@@ -6,12 +6,15 @@ const port = process.env.PORT || 5000;
 
 
 const errorHandler = require("./middleware/errorHandler");
+
+// Routes
 const testRoutes = require("./routes/v1/test.route");
 const mailRoutes = require("./routes/v1/mail.route");
 const userRoutes = require("./routes/v1/users.route");
 const organizationRoutes = require("./routes/v1/organizations.route");
 const courseRoutes = require("./routes/v1/courses.route");
 const taskRoutes = require("./routes/v1/tasks.route");
+const batchRoutes = require("./routes/v1/batches.route");
 
 
 app.get('/', (req, res) => {
@@ -33,7 +36,7 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/organizations", organizationRoutes);
 app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/tasks", taskRoutes);
-
+app.use("/api/v1/batches", batchRoutes);
 
 
 
