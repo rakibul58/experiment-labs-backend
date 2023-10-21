@@ -9,7 +9,7 @@ router
     .post(userControllers.saveAUser);
 
 router
-    .route("/organizationId/:organizationId")
+    .route("/mentors/organizationId/:organizationId")
     .get(userControllers.getAllMentors);
 
 
