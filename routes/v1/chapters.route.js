@@ -20,4 +20,9 @@ router
     .get(chapterControllers.getChaptersByWeekId);
 
 
+router
+    .route("/courseId/:courseId")
+    .get(chapterControllers.getChaptersByCourseId);
+
+
 module.exports = router;

@@ -46,18 +46,10 @@ module.exports.renameAChapter = async (req, res, next) => {
     res.send(result);
 };
 
-// //Rename chapters
-// app.put('/chapters/:id', async (req, res) => {
-//     const id = req.params.id;
-//     const chapterName = req.body.chapterName;
-//     const filter = { _id: new ObjectId(id) };
 
-//     const options = { upsert: true };
-//     const updatedDoc = {
-//         $set: {
-//             chapterName: chapterName
-//         }
-//     };
-//     const result = await chapterCollection.updateOne(filter, updatedDoc, options);
-//     res.send(result);
-// });
+module.exports.getChaptersByCourseId = async (req, res, next) => {
+    const courseId = req.params.courseId;
+    const filter = { courseId: courseId };
+    const result = await chapterCollection.find(filter).toArray();
+    res.send(result);
+};
