@@ -16,6 +16,7 @@ const courseRoutes = require("./routes/v1/courses.route");
 const taskRoutes = require("./routes/v1/tasks.route");
 const batchRoutes = require("./routes/v1/batches.route");
 const chapterRoutes = require("./routes/v1/chapters.route");
+const weekRoutes = require("./routes/v1/weeks.route");
 
 
 app.get('/', (req, res) => {
@@ -39,6 +40,7 @@ app.use("/api/v1/courses", courseRoutes);
 app.use("/api/v1/tasks", taskRoutes);
 app.use("/api/v1/batches", batchRoutes);
 app.use("/api/v1/chapters", chapterRoutes);
+app.use("/api/v1/weeks", weekRoutes);
 
 
 

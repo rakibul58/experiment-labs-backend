@@ -35,7 +35,6 @@ module.exports.renameAChapter = async (req, res, next) => {
     const id = req.params.id;
     const chapterName = req.body.chapterName;
     const filter = { _id: new ObjectId(id) };
-
     const options = { upsert: true };
     const updatedDoc = {
         $set: {
