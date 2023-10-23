@@ -130,4 +130,4 @@ module.exports.createABatch = async (req, res, next) => {
         "week": weekResult,
         "chapter": chapterResult
     });
-}
+};
