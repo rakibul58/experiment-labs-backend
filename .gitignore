@@ -3,3 +3,4 @@ node_modules
 yarn.lock
 index (2).js
 .vercel
+collection.js
