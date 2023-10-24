@@ -7,16 +7,7 @@ module.exports.addAWeek = async (req, res, next) => {
     const data = req.body;
     const courseId = data.courseId;
     const creator = data.creator;
-    const organization = data.organization;
-    const week = {
-        courseId: "" + courseId,
-        weekName: data.weekName,
-        creator: creator,
-        organization: organization,
-        weekStartDate: data.weekStartDate,
-        weekEndDate: data.weekEndDate
-    };
-    const newResult = await weekCollection.insertOne(week);
+    const newResult = await weekCollection.insertOne(data);
     const weekId = newResult.insertedId;
     const chapter = {
         courseId: "" + courseId,
