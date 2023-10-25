@@ -8,4 +8,10 @@ router
     .post(organizationControllers.createAnOrganization);
 
 
+router
+    .route("/:id")
+    .get(organizationControllers.getAnOrganization)
+    .put(organizationControllers.updateAnOrganization);
+
+
 module.exports = router;
