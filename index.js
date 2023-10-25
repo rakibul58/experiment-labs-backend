@@ -19,6 +19,7 @@ const chapterRoutes = require("./routes/v1/chapters.route");
 const weekRoutes = require("./routes/v1/weeks.route");
 const quizRoutes = require("./routes/v1/quizzes.route");
 const skillCategoriesRoutes = require("./routes/v1/skillCategories.route");
+const earningCategoriesRoutes = require("./routes/v1/earningCategories.route");
 
 
 app.get('/', (req, res) => {
@@ -45,6 +46,7 @@ app.use("/api/v1/chapters", chapterRoutes);
 app.use("/api/v1/weeks", weekRoutes);
 app.use("/api/v1/quizzes", quizRoutes);
 app.use("/api/v1/skillCategories", skillCategoriesRoutes);
+app.use("/api/v1/earningCategories", earningCategoriesRoutes);
 
 
 
