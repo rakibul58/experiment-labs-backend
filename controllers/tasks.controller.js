@@ -10,6 +10,7 @@ const audioCollection = client.db('experiment-labs').collection('audios');
 const fileCollection = client.db('experiment-labs').collection('files');
 const chapterCollection = client.db('experiment-labs').collection('chapters');
 const courseCollection = client.db('experiment-labs').collection('courses');
+const userCollection = client.db('experiment-labs').collection('users');
 
 module.exports.getAllTasksByTaskTypeAndCourseId = async (req, res, next) => {
     const taskType = req.params.taskType;
@@ -462,3 +463,163 @@ module.exports.getTasksByChapterId = async (req, res, next) => {
 };
 
 
+
+module.exports.addTaskCompletionDetails = async (req, res, next) => {
+    const chapterId = req.params.chapterId;
+    const taskId = req.params.taskId;
+    const participantChapter = req.body.participantChapter;
+    const participantTask = req.body.participantTask;
+    const courseId = req.body.courseId;
+    const courseName = req.body.courseName;
+    const taskType = req.params.taskType;
+
+    try {
+        const chapterDocument = await chapterCollection.findOne({
+            _id: new ObjectId(chapterId),
+        });
+
+        if (!chapterDocument) {
+            return res.status(404).json({ message: "Chapter not found" });
+        }
+
+        const task = chapterDocument.tasks.find(
+            (task) => task.taskId === taskId && task.taskType === taskType
+        );
+
+        if (!task) {
+            return res
+                .status(404)
+                .json({ message: "Task not found within the chapter" });
+        }
+
+        if (!task.participants) {
+            task.participants = [];
+        }
+
+        // Check if the participant with the same ID already exists in the task
+        const existingParticipantChapterIndex = task.participants.findIndex(
+            (existing) => existing.email === participantChapter.email
+        );
+
+        if (existingParticipantChapterIndex !== -1) {
+            // Participant already exists, update their information
+            task.participants[existingParticipantChapterIndex] =
+                participantChapter;
+        } else {
+            // Participant is new, add them to the task
+            task.participants.push(participantChapter);
+        }
+
+        // Update the document in the chapter collection
+        await chapterCollection.updateOne(
+            { _id: new ObjectId(chapterId) },
+            { $set: { tasks: chapterDocument.tasks } }
+        );
+
+        // Find the task collection based on task type
+        let taskCollection;
+        switch (taskType) {
+            case "Reading":
+                taskCollection = readingCollection;
+                break;
+            case "Quiz":
+                taskCollection = quizCollection;
+                break;
+            case "Assignment":
+                taskCollection = assignmentCollection;
+                break;
+            case "Classes":
+                taskCollection = classCollection;
+                break;
+            case "LiveTests":
+                taskCollection = liveTestCollection;
+                break;
+            case "Video":
+                taskCollection = videoCollection;
+                break;
+            case "Audio":
+                taskCollection = audioCollection;
+                break;
+            case "Files":
+                taskCollection = fileCollection;
+                break;
+            default:
+                return res.status(400).json({ message: "Invalid task type" });
+        }
+
+        const taskDocument = await taskCollection.findOne({
+            _id: new ObjectId(taskId),
+        });
+
+        if (!taskDocument) {
+            return res
+                .status(404)
+                .json({ message: "Task not found within the task collection" });
+        }
+
+        if (!taskDocument.participants) {
+            taskDocument.participants = [];
+        }
+
+        // Check if the participant with the same ID already exists in the task collection
+        const existingParticipantTaskIndex =
+            taskDocument.participants.findIndex(
+                (existing) =>
+                    existing.participant.email === participantTask.participant.email
+            );
+
+        if (existingParticipantTaskIndex !== -1) {
+            // Participant already exists, update their information
+            taskDocument.participants[existingParticipantTaskIndex] =
+                participantTask;
+        } else {
+            // Participant is new, add them to the task collection
+            taskDocument.participants.push(participantTask);
+        }
+
+        // Update the document in the task collection
+        const result = await taskCollection.updateOne(
+            { _id: new ObjectId(taskId) },
+            { $set: { participants: taskDocument.participants } }
+        );
+
+        if (result) {
+            // Search for the user in userCollection using their email
+            const user = await userCollection.findOne({ email: participantTask.participant.email });
+
+            if (user) {
+                // Check if the user already has a course entry with the same courseId
+                const existingCourseIndex = user.courses ? user.courses.findIndex(
+                    (course) => course.courseId === courseId
+                ) : -1;
+
+                if (existingCourseIndex !== -1) {
+                    // User has an existing course entry, update completedTask count
+                    user.courses[existingCourseIndex].completedTask++;
+                } else {
+                    // User doesn't have a course entry for this courseId, create a new one
+                    const newCourseEntry = {
+                        courseId: courseId,
+                        courseName: courseName,
+                        completedTask: 1, // Initialize completedTask to 1 for the new course
+                    };
+                    if (!user.courses) {
+                        user.courses = []; // Initialize the courses array if it doesn't exist
+                    }
+                    user.courses.push(newCourseEntry);
+                }
+
+                // Update the user document in userCollection
+                await userCollection.updateOne(
+                    { email: participantTask.participant.email },
+                    { $set: { courses: user.courses } }
+                );
+            }
+
+            res.status(200).json(result);
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
