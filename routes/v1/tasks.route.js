@@ -31,4 +31,9 @@ router
     .post(taskControllers.addATask);
 
 
+router
+    .route("/taskType/:taskType/taskId/:taskId/chapterId/:chapterId")
+    .post(taskControllers.addTaskCompletionDetails);
+
+
 module.exports = router;
