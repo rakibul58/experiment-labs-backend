@@ -18,11 +18,13 @@ const batchRoutes = require("./routes/v1/batches.route");
 const chapterRoutes = require("./routes/v1/chapters.route");
 const weekRoutes = require("./routes/v1/weeks.route");
 const quizRoutes = require("./routes/v1/quizzes.route");
-const skillCategoriesRoutes = require("./routes/v1/skillCategories.route");
-const earningCategoriesRoutes = require("./routes/v1/earningCategories.route");
+const skillCategoryRoutes = require("./routes/v1/skillCategories.route");
+const earningCategoryRoutes = require("./routes/v1/earningCategories.route");
 const eventRoutes = require("./routes/v1/events.route");
 const assignmentSubmissionRoutes = require("./routes/v1/assignmentSubmissions.route");
 const classRoutes = require("./routes/v1/classes.route");
+const redemptionCategoryRoutes = require("./routes/v1/redemptionCategories.route");
+const redemptionAccessRoutes = require("./routes/v1/redemptionAccess.route");
 
 
 app.get('/', (req, res) => {
@@ -48,11 +50,13 @@ app.use("/api/v1/batches", batchRoutes);
 app.use("/api/v1/chapters", chapterRoutes);
 app.use("/api/v1/weeks", weekRoutes);
 app.use("/api/v1/quizzes", quizRoutes);
-app.use("/api/v1/skillCategories", skillCategoriesRoutes);
-app.use("/api/v1/earningCategories", earningCategoriesRoutes);
+app.use("/api/v1/skillCategories", skillCategoryRoutes);
+app.use("/api/v1/earningCategories", earningCategoryRoutes);
 app.use("/api/v1/events", eventRoutes);
 app.use("/api/v1/assignmentSubmissions", assignmentSubmissionRoutes);
 app.use("/api/v1/classes", classRoutes);
+app.use("/api/v1/redemptionCategories", redemptionCategoryRoutes);
+app.use("/api/v1/redemptionAccesses", redemptionAccessRoutes);
 
 
 
