@@ -3,10 +3,7 @@ const client = require("../utils/dbConnect");
 const feedbackCategoryCollection = client.db('experiment-labs').collection('feedbackCategories');
 
 
-module.exports.fun = async (req, res, next) => {};
-
-
-app.post('/feedback_categories', async (req, res) => {
+module.exports.addAFeedbackCategory = async (req, res, next) => {
     // Check if the organizationId exists in the database
     const { organizationId, categoryName, courseId, rating } = req.body;
     const existingData = await feedbackCategoryCollection.findOne({ organizationId });
@@ -85,10 +82,10 @@ app.post('/feedback_categories', async (req, res) => {
 
         res.send(result3)
     }
-});
+};
 
-//update a feedback categoryName
-app.put("/feedback_categories/categoryName", async (req, res) => {
+
+module.exports.updateACategoryNameAndRating = async (req, res, next) => {
     const { organizationId, courseId, oldCategoryName, newCategoryName, oldRating, newRating } = req.body;
 
     // Find the organization
@@ -137,12 +134,10 @@ app.put("/feedback_categories/categoryName", async (req, res) => {
 
 
     res.send(result);
+};
 
-});
 
-//Delete a feedback category
-app.put("/feedback/deleteCategory", async (req, res) => {
-
+module.exports.removeACategory = async (req, res, next) => {
     const { organizationId, courseId, categoryName } = req.body;
 
     const organization = await feedbackCategoryCollection.findOne({ organizationId });
@@ -182,18 +177,18 @@ app.put("/feedback/deleteCategory", async (req, res) => {
     );
 
     res.send(result);
+};
 
-});
 
-
-app.get('/feedback_categories/:id', async (req, res) => {
-    const id = req.params.id;
+module.exports.getAFeedbackCategoryByOrganizationId = async (req, res, next) => {
+    const id = req.params.organizationId;
     const filter = { organizationId: id };
     const result = await feedbackCategoryCollection.findOne(filter);
     res.send(result);
-});
+};
 
-app.post('/feedbackItems', async (req, res) => {
+
+module.exports.addAFeedbackItem = async (req, res, next) => {
     const { organizationId, courseId, categoryName, rating, feedbackItem } = req.body;
 
     const document = await feedbackCategoryCollection.findOne({
@@ -249,11 +244,10 @@ app.post('/feedbackItems', async (req, res) => {
     );
 
     res.send(result);
+};
 
-});
 
-//edit feedback item
-app.put("/editFeedbackItem", async (req, res) => {
+module.exports.updateAFeedbackItem = async (req, res, next) => {
     const {
         organizationId,
         courseId,
@@ -301,11 +295,11 @@ app.put("/editFeedbackItem", async (req, res) => {
         document
     );
 
-    res.send(result)
-});
+    res.send(result);
+};
 
-//delete feedback item
-app.delete("/deleteFeedbackItem", async (req, res) => {
+
+module.exports.deleteAFeedbackItem = async (req, res, next) => {
     const { organizationId, courseId, categoryName, feedbackItemName } = req.body;
 
 
@@ -339,5 +333,4 @@ app.delete("/deleteFeedbackItem", async (req, res) => {
     );
 
     res.send(result);
-
-});
+};
