@@ -19,6 +19,7 @@
     "express-rate-limit": "^6.5.2",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.6.0",
+    "node-cron": "^3.0.2",
     "nodemailer": "^6.7.8",
     "nodemon": "^2.0.19",
     "stripe": "^10.3.0"
