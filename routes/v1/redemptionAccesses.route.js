@@ -1,5 +1,5 @@
 const express = require("express");
-const redemptionAccessControllers = require("../../controllers/redemptionAccess.controller");
+const redemptionAccessControllers = require("../../controllers/redemptionAccesses.controller");
 
 const router = express.Router();
 

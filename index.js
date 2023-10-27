@@ -24,7 +24,9 @@ const eventRoutes = require("./routes/v1/events.route");
 const assignmentSubmissionRoutes = require("./routes/v1/assignmentSubmissions.route");
 const classRoutes = require("./routes/v1/classes.route");
 const redemptionCategoryRoutes = require("./routes/v1/redemptionCategories.route");
-const redemptionAccessRoutes = require("./routes/v1/redemptionAccess.route");
+const redemptionAccessRoutes = require("./routes/v1/redemptionAccesses.route");
+const feedbackCategoriesRoutes = require("./routes/v1/feedbackCategories.route");
+const givenFeedbackRoutes = require("./routes/v1/givenFeedbacks.route");
 
 
 app.get('/', (req, res) => {
@@ -57,6 +59,8 @@ app.use("/api/v1/assignmentSubmissions", assignmentSubmissionRoutes);
 app.use("/api/v1/classes", classRoutes);
 app.use("/api/v1/redemptionCategories", redemptionCategoryRoutes);
 app.use("/api/v1/redemptionAccesses", redemptionAccessRoutes);
+app.use("/api/v1/feedbackCategories", feedbackCategoriesRoutes);
+app.use("/api/v1/givenFeedbacks", givenFeedbackRoutes);
 
 
 
