@@ -27,6 +27,10 @@ const redemptionCategoryRoutes = require("./routes/v1/redemptionCategories.route
 const redemptionAccessRoutes = require("./routes/v1/redemptionAccesses.route");
 const feedbackCategoriesRoutes = require("./routes/v1/feedbackCategories.route");
 const givenFeedbackRoutes = require("./routes/v1/givenFeedbacks.route");
+const { startCronJob } = require('./utils/cronJob');
+
+//Calling Functions
+startCronJob();
 
 
 app.get('/', (req, res) => {
