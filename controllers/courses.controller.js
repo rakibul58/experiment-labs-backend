@@ -82,3 +82,11 @@ module.exports.getCoursesByOrganizationId = async (req, res, next) => {
     const course = await courseCollection.find(filter).toArray();
     res.send(course);
 }
+
+
+module.exports.updateACourseData = async (req, res, next) => {
+    const courseId = req.params.id;
+    const updatedCourse = req.body;
+    const result = await courseCollection.updateOne({ _id: new ObjectId(courseId) }, { $set: updatedCourse });
+    res.send(result);
+}

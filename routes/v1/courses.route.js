@@ -10,7 +10,8 @@ router
 
 router
     .route("/:id")
-    .get(courseControllers.getACourseById);
+    .get(courseControllers.getACourseById)
+    .put(courseControllers.updateACourseData);
 
 router
     .route("/organizationId/:organizationId")

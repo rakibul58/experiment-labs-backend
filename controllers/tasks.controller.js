@@ -473,6 +473,8 @@ module.exports.addTaskCompletionDetails = async (req, res, next) => {
     const courseName = req.body.courseName;
     const taskType = req.params.taskType;
 
+    // res.send({taskId})
+
     try {
         const chapterDocument = await chapterCollection.findOne({
             _id: new ObjectId(chapterId),
