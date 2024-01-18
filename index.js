@@ -3,6 +3,9 @@ const cors = require("cors");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 const errorHandler = require("./middleware/errorHandler");
@@ -81,9 +84,9 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-process.on("unhandledRejection", (error) => {
-  console.log(error.name, error.message);
-  app.close(() => {
-    process.exit(1);
-  });
-});
+// process.on("unhandledRejection", (error) => {
+//   console.log(error.name, error.message);
+//   app.close(() => {
+//     process.exit(1);
+//   });
+// });
