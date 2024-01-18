@@ -13,4 +13,13 @@ router
     .get(userControllers.getAllMentors);
 
 
+router
+    .route("/unpaidUsers/checkout")
+    .post(userControllers.checkoutPayment);
+
+router
+    .route("/unpaidUsers/verifyPayment")
+    .post(userControllers.verifyPayment);
+
+
 module.exports = router;

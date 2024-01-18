@@ -230,48 +230,112 @@ module.exports.getTasksByTaskTypeAndTaskId = async (req, res, next) => {
 module.exports.deleteATask = async (req, res, next) => {
     const taskType = req.params.taskType;
     const taskId = req.params.taskId;
-
+    const batches = req.body;
     let deleteResult, result;
 
-    switch (taskType) {
-        case 'assignments':
-            deleteResult = await assignmentCollection.deleteOne({ _id: new ObjectId(taskId) });
-            break;
-        case 'classes':
-            deleteResult = await classCollection.deleteOne({ _id: new ObjectId(taskId) });
-            break;
-        case 'readings':
-            deleteResult = await readingCollection.deleteOne({ _id: new ObjectId(taskId) });
-            break;
-        case 'quizes':
-            deleteResult = await quizCollection.deleteOne({ _id: new ObjectId(taskId) });
-            break;
-        case 'liveTests':
-            deleteResult = await liveTestCollection.deleteOne({ _id: new ObjectId(taskId) });
-            break;
-        case 'videos':
-            deleteResult = await videoCollection.deleteOne({ _id: new ObjectId(taskId) });
-            break;
-        case 'audios':
-            deleteResult = await audioCollection.deleteOne({ _id: new ObjectId(taskId) });
-            break;
-        case 'files':
-            deleteResult = await fileCollection.deleteOne({ _id: new ObjectId(taskId) });
-            break;
-        case 'schedule':
-            deleteResult = await scheduleCollection.deleteOne({ _id: new ObjectId(taskId) });
-            break;
-        default:
-            return res.status(400).json({ error: 'Invalid task type' });
-    }
+    if (batches.length === 0) {
+        switch (taskType) {
+            case 'assignments':
+                deleteResult = await assignmentCollection.deleteOne({ _id: new ObjectId(taskId) });
+                break;
+            case 'classes':
+                deleteResult = await classCollection.deleteOne({ _id: new ObjectId(taskId) });
+                break;
+            case 'readings':
+                deleteResult = await readingCollection.deleteOne({ _id: new ObjectId(taskId) });
+                break;
+            case 'quizes':
+                deleteResult = await quizCollection.deleteOne({ _id: new ObjectId(taskId) });
+                break;
+            case 'liveTests':
+                deleteResult = await liveTestCollection.deleteOne({ _id: new ObjectId(taskId) });
+                break;
+            case 'videos':
+                deleteResult = await videoCollection.deleteOne({ _id: new ObjectId(taskId) });
+                break;
+            case 'audios':
+                deleteResult = await audioCollection.deleteOne({ _id: new ObjectId(taskId) });
+                break;
+            case 'files':
+                deleteResult = await fileCollection.deleteOne({ _id: new ObjectId(taskId) });
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid task type' });
+        }
 
-    // Remove task from chapter's tasks array
-    if (deleteResult.deletedCount > 0) {
-        const chapterFilter = { 'tasks.taskId': taskId };
-        const chapterUpdate = {
-            $pull: { tasks: { taskId } }
-        };
-        result = await chapterCollection.updateOne(chapterFilter, chapterUpdate);
+        // Remove task from chapter's tasks array
+        if (deleteResult.deletedCount > 0) {
+            const chapterFilter = { 'tasks.taskId': taskId };
+            const chapterUpdate = {
+                $pull: { tasks: { taskId } }
+            };
+            result = await chapterCollection.updateOne(chapterFilter, chapterUpdate);
+        }
+    }
+    else {
+
+        switch (taskType) {
+            case 'assignments':
+                deleteResult = await assignmentCollection.updateOne(
+                    { _id: new ObjectId(taskId) },
+                    { $set: { batches: batches } }
+                );
+                break;
+            case 'classes':
+                deleteResult = await classCollection.updateOne(
+                    { _id: new ObjectId(taskId) },
+                    { $set: { batches: batches } }
+                );
+                break;
+            case 'readings':
+                deleteResult = await readingCollection.updateOne(
+                    { _id: new ObjectId(taskId) },
+                    { $set: { batches: batches } }
+                );
+                break;
+            case 'quizes':
+                deleteResult = await quizCollection.updateOne(
+                    { _id: new ObjectId(taskId) },
+                    { $set: { batches: batches } }
+                );
+                break;
+            case 'liveTests':
+                deleteResult = await liveTestCollection.updateOne(
+                    { _id: new ObjectId(taskId) },
+                    { $set: { batches: batches } }
+                );
+                break;
+            case 'videos':
+                deleteResult = await videoCollection.updateOne(
+                    { _id: new ObjectId(taskId) },
+                    { $set: { batches: batches } }
+                );
+                break;
+            case 'audios':
+                deleteResult = await audioCollection.updateOne(
+                    { _id: new ObjectId(taskId) },
+                    { $set: { batches: batches } }
+                );
+                break;
+            case 'files':
+                deleteResult = await fileCollection.updateOne(
+                    { _id: new ObjectId(taskId) },
+                    { $set: { batches: batches } }
+                );
+                break;
+            default:
+                return res.status(400).json({ error: 'Invalid task type' });
+        }
+
+        // Remove task from chapter's tasks array
+        if (deleteResult.modifiedCount > 0) {
+            const chapterFilter = { 'tasks.taskId': taskId };
+            const chapterUpdate = {
+                $set: { 'tasks.$.batches': batches }
+            };
+            result = await chapterCollection.updateOne(chapterFilter, chapterUpdate);
+        }
+
     }
 
     res.status(200).json({ deleteResult, result });
@@ -343,8 +407,6 @@ module.exports.updateATask = async (req, res, next) => {
     // Update chapter's task info as well
     if (updateResult.modifiedCount > 0) {
         const chapterFilter = { 'tasks.taskId': taskId };
-        const find = await chapterCollection.findOne(chapterFilter);
-        console.log(find);
         const chapterUpdate = {
             $set: { 'tasks.$.taskName': updatedTask.taskName, 'tasks.$.batches': updatedTask.batches }
         };
@@ -486,6 +548,8 @@ module.exports.addTaskCompletionDetails = async (req, res, next) => {
     const courseId = req.body.courseId;
     const courseName = req.body.courseName;
     const taskType = req.params.taskType;
+
+    // res.send({taskId})
 
     try {
         const chapterDocument = await chapterCollection.findOne({

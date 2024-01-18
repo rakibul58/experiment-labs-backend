@@ -21,8 +21,9 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.6.0",
     "node-cron": "^3.0.2",
-    "nodemailer": "^6.7.8",
+    "nodemailer": "^6.9.8",
     "nodemon": "^2.0.19",
+    "razorpay": "^2.9.2",
     "stripe": "^10.3.0"
   }
 }
