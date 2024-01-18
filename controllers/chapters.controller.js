@@ -8,6 +8,7 @@ module.exports.getAllChapters = async (req, res, next) => {
 };
 
 
+
 module.exports.getChaptersByWeekId = async (req, res, next) => {
     const weekId = req.params.weekId;
     const query = { weekId: weekId };

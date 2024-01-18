@@ -8,6 +8,7 @@ const liveTestCollection = client.db('experiment-labs').collection('liveTests');
 const videoCollection = client.db('experiment-labs').collection('videos');
 const audioCollection = client.db('experiment-labs').collection('audios');
 const fileCollection = client.db('experiment-labs').collection('files');
+const scheduleCollection = client.db('experiment-labs').collection('schedule');
 const chapterCollection = client.db('experiment-labs').collection('chapters');
 const courseCollection = client.db('experiment-labs').collection('courses');
 const userCollection = client.db('experiment-labs').collection('users');
@@ -42,6 +43,9 @@ module.exports.getAllTasksByTaskTypeAndCourseId = async (req, res, next) => {
             break;
         case 'files':
             result = await fileCollection.find(filter).toArray();
+            break;
+        case 'schedule':
+            result = await scheduleCollection.find(filter).toArray();
             break;
         default:
             return res.status(400).json({ error: 'Invalid task type' });
@@ -132,6 +136,10 @@ module.exports.addATask = async (req, res, next) => {
             taskTypeInput = "Files";
             result = await fileCollection.insertOne(task);
             break;
+        case 'schedule':
+            taskTypeInput = "Schedule";
+            result = await scheduleCollection.insertOne(task);
+            break;
         default:
             return res.status(400).json({ error: 'Invalid task type' });
     }
@@ -207,6 +215,9 @@ module.exports.getTasksByTaskTypeAndTaskId = async (req, res, next) => {
             break;
         case 'files':
             result = await fileCollection.findOne(filter);
+            break;
+        case 'schedule':
+            result = await scheduleCollection.findOne(filter);
             break;
         default:
             return res.status(400).json({ error: 'Invalid task type' });
@@ -609,6 +620,9 @@ module.exports.addTaskCompletionDetails = async (req, res, next) => {
                 break;
             case "Files":
                 taskCollection = fileCollection;
+                break;
+            case "Schedule":
+                taskCollection = scheduleCollection;
                 break;
             default:
                 return res.status(400).json({ message: "Invalid task type" });
