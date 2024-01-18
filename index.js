@@ -82,7 +82,7 @@ app.listen(port, () => {
 
 process.on("unhandledRejection", (error) => {
   console.log(error.name, error.message);
-  app.close(() => {
+ /*  app.close(() => {
     process.exit(1);
-  });
+  }); */
 });
