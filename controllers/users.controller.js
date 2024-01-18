@@ -4,6 +4,9 @@ const userCollection = client.db("experiment-labs").collection("users");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
+const firebaseUtils = require("../utils/firebaseSignUp");
+const passwordUtils = require("../utils/generatePassword");
+
 module.exports.getAnUserByEmail = async (req, res, next) => {
   const email = req.query.email;
   const query = { email: email };
@@ -73,47 +76,79 @@ module.exports.verifyPayment = async (req, res, next) => {
   }
 };
 
-// module.exports.addStudent = async (req, res) => {
-//   const { users, relatedData } = req.body;
-//   console.log(users, relatedData);
+module.exports.addStudent = async (req, res) => {
+  const user = req.body;
 
-//   try {
-//     // Add users to Firebase using the function
-//     for (const user of users) {
-//       // Merge each item of relatedData into the user object
-//       Object.assign(user, relatedData);
+  try {
+    // Generate a custom password
+    const password = passwordUtils.generateCustomPassword(user);
+    user.password = password;
 
-//       // Generate a custom password
-//       const password = passwordUtils.generateCustomPassword(user);
-//       user.password = password;
+    const result = await firebaseUtils.createUserWithEmailAndPassword(
+      user.email,
+      password
+    );
 
-//       const result = await firebaseUtils.createUserWithEmailAndPassword(
-//         user.email,
-//         password
-//       );
-//       console.log(user);
+    if (!result.success) {
+      console.error(
+        `Failed to create user in Firebase for email: ${user.email}`
+      );
+    } else {
+      const insertedUser = await userCollection.insertOne(user);
+    }
 
-//       if (!result.success) {
-//         console.error(
-//           `Failed to create user in Firebase for email: ${user.email}`
-//         );
-//         // Handle error case: Maybe remove the user from MongoDB?
-//       } else {
-//         // Insert all users into MongoDB
-//         const insertedUsers = await userCollection.insertMany(users);
-//         const count = await userCollection.countDocuments();
-//       }
-//     }
+    res.status(200).json({
+      message: "User added to MongoDB and Firebase successfully",
+      //   insertedUser,
+    });
+  } catch (error) {
+    console.error("Error adding users:", error);
+    res
+      .status(500)
+      .json({ message: "Error adding users", error: error.message });
+  }
+};
 
-//     res.status(200).json({
-//       message: "Users added to MongoDB and Firebase successfully",
-//       insertedUsers,
-//       count,
-//     });
-//   } catch (error) {
-//     console.error("Error adding users:", error);
-//     res
-//       .status(500)
-//       .json({ message: "Error adding users", error: error.message });
-//   }
-// };
+module.exports.addBulkStudent = async (req, res) => {
+  const { users } = req.body;
+
+  try {
+    // Add users to Firebase using the function
+    for (const user of users) {
+      // Merge each item of relatedData into the user object
+      //   Object.assign(user, relatedData);
+
+      // Generate a custom password
+      const password = passwordUtils.generateCustomPassword(user);
+      user.password = password;
+
+      const result = await firebaseUtils.createUserWithEmailAndPassword(
+        user.email,
+        password
+      );
+      console.log(user);
+
+      if (!result.success) {
+        console.error(
+          `Failed to create user in Firebase for email: ${user.email}`
+        );
+        // Handle error case: Maybe remove the user from MongoDB?
+      } else {
+        // Insert all users into MongoDB
+        const insertedUsers = await userCollection.insertMany(users);
+        const count = await userCollection.countDocuments();
+      }
+    }
+
+    res.status(200).json({
+      message: "Users added to MongoDB and Firebase successfully",
+      insertedUsers,
+      count,
+    });
+  } catch (error) {
+    console.error("Error adding users:", error);
+    res
+      .status(500)
+      .json({ message: "Error adding users", error: error.message });
+  }
+};
