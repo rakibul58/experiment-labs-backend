@@ -259,6 +259,9 @@ module.exports.deleteATask = async (req, res, next) => {
             case 'files':
                 deleteResult = await fileCollection.deleteOne({ _id: new ObjectId(taskId) });
                 break;
+            case 'schedule':
+                deleteResult = await scheduleCollection.deleteOne({ _id: new ObjectId(taskId) });
+                break;
             default:
                 return res.status(400).json({ error: 'Invalid task type' });
         }
