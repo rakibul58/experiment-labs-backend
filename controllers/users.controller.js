@@ -95,12 +95,12 @@ module.exports.addStudent = async (req, res) => {
       );
     } else {
       const insertedUser = await userCollection.insertOne(user);
-    }
 
-    res.status(200).json({
-      message: "User added to MongoDB and Firebase successfully",
-      //   insertedUser,
-    });
+      res.status(200).json({
+        message: "User added to MongoDB and Firebase successfully",
+        insertedUser,
+      });
+    }
   } catch (error) {
     console.error("Error adding users:", error);
     res
@@ -110,13 +110,13 @@ module.exports.addStudent = async (req, res) => {
 };
 
 module.exports.addBulkStudent = async (req, res) => {
-  const { users } = req.body;
+  const { users, relatedData } = req.body;
 
   try {
     // Add users to Firebase using the function
     for (const user of users) {
       // Merge each item of relatedData into the user object
-      //   Object.assign(user, relatedData);
+      Object.assign(user, relatedData);
 
       // Generate a custom password
       const password = passwordUtils.generateCustomPassword(user);
@@ -137,14 +137,14 @@ module.exports.addBulkStudent = async (req, res) => {
         // Insert all users into MongoDB
         const insertedUsers = await userCollection.insertMany(users);
         const count = await userCollection.countDocuments();
+
+        res.status(200).json({
+          message: "Users added to MongoDB and Firebase successfully",
+          insertedUsers,
+          count,
+        });
       }
     }
-
-    res.status(200).json({
-      message: "Users added to MongoDB and Firebase successfully",
-      insertedUsers,
-      count,
-    });
   } catch (error) {
     console.error("Error adding users:", error);
     res
