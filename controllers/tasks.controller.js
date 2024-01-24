@@ -707,3 +707,91 @@ module.exports.addTaskCompletionDetails = async (req, res, next) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+
+
+
+module.exports.updateEvent = async (req, res) => {
+    const userEmail = req.params.email; // Assuming the email is part of the URL parameters
+    const newEventsData = req.body;
+
+    try {
+        // Check if the user with the given email exists
+        const userExists = await scheduleCollection.findOne({ 'usersession.user.email': userEmail });
+
+        if (userExists) {
+            // Update the existing events or create a new events array
+            const updateResult = await scheduleCollection.updateOne(
+                { 'usersession.user.email': userEmail },
+                {
+                    $set: { 'usersession.user.email': userEmail, events: [newEventsData] }
+                }
+            );
+
+            if (updateResult.matchedCount > 0) {
+                res.status(200).json({ success: true, message: 'Events replaced successfully' });
+            } else {
+                res.status(404).json({ success: false, message: 'User not found or no matching document' });
+            }
+        } else {
+            // If user doesn't exist, create a new document
+            const insertResult = await scheduleCollection.insertOne({
+                usersession: { user: { email: userEmail } },
+                events: [newEventsData]
+            });
+
+            if (insertResult.insertedCount > 0) {
+                res.status(201).json({ success: true, message: 'User and events created successfully' });
+            } else {
+                res.status(500).json({ success: false, message: 'Failed to create user and events' });
+            }
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+
+
+
+module.exports.addEvent = async (req, res, next) => {
+    const eventId = req.params.id;
+    const newEvent = req.body;
+    try {
+        // Try to find the document by its _id
+        const existingEvent = await scheduleCollection.findOne({ _id: new ObjectId(eventId) });
+
+        if (!existingEvent) {
+            // If the document doesn't exist, create a new one with the initial events array
+            const createResult = await scheduleCollection.insertOne({
+                _id: new ObjectId(eventId),
+                events: [newEvent]
+            });
+
+            if (createResult.insertedCount > 0) {
+                res.status(200).json(createResult);
+            } else {
+                res.status(500).json({ success: false, message: 'Failed to create and add event' });
+            }
+        } else {
+            // If the document exists, push the new event into the existing events array
+            const updateResult = await scheduleCollection.updateOne(
+                { _id: new ObjectId(eventId) },
+                { $push: { events: newEvent } }
+            );
+
+            if (updateResult.matchedCount > 0) {
+                res.status(200).json(updateResult);
+            } else {
+                res.status(500).json({ success: false, message: 'Failed to add event to existing document' });
+            }
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+

@@ -35,6 +35,12 @@ router
 router
     .route("/taskType/:taskType/taskId/:taskId/chapterId/:chapterId")
     .post(taskControllers.addTaskCompletionDetails);
+router
+    .route("/updateEvent/:email")
+    .post(taskControllers.updateEvent);
+router
+    .route("/:id/addEvent")
+    .post(taskControllers.addEvent);
 
 
 module.exports = router;
