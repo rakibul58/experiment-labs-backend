@@ -724,7 +724,7 @@ module.exports.updateEvent = async (req, res) => {
             const updateResult = await scheduleCollection.updateOne(
                 { 'usersession.user.email': userEmail },
                 {
-                    $set: { 'usersession.user.email': userEmail, events: [newEventsData] }
+                    $set: { 'usersession.user.email': userEmail, events: newEventsData}
                 }
             );
 
