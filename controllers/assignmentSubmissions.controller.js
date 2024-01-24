@@ -9,6 +9,7 @@ module.exports.submitAnAssignment = async (req, res, next) => {
         'submitter._id': newSubmission.submitter._id
     };
 
+    
     // Try to find an existing submission with the same taskId and submitter _id
     const existingSubmission = await assignmentSubmitCollection.findOne(query);
 
