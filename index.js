@@ -7,9 +7,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 const errorHandler = require("./middleware/errorHandler");
-
 
 // Routes
 const testRoutes = require("./routes/v1/test.route");
@@ -31,23 +29,22 @@ const redemptionCategoryRoutes = require("./routes/v1/redemptionCategories.route
 const redemptionAccessRoutes = require("./routes/v1/redemptionAccesses.route");
 const feedbackCategoriesRoutes = require("./routes/v1/feedbackCategories.route");
 const givenFeedbackRoutes = require("./routes/v1/givenFeedbacks.route");
-const { startCronJob } = require('./utils/cronJob');
+const certificateTemplatesRoutes = require("./routes/v1/certificateTemplates.route");
+const { startCronJob } = require("./utils/cronJob");
 
 //Calling Functions
 startCronJob();
 
-
-app.get('/', (req, res) => {
-    res.send('Hello world')
-})
+app.get("/", (req, res) => {
+  res.send("Hello world");
+});
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('front'));
+app.use(express.static("front"));
 
 // Error handler middleware
 app.use(errorHandler);
-
 
 // Attach your routes after the error handler
 app.use("/api/v1/test", testRoutes);
@@ -69,8 +66,7 @@ app.use("/api/v1/redemptionCategories", redemptionCategoryRoutes);
 app.use("/api/v1/redemptionAccesses", redemptionAccessRoutes);
 app.use("/api/v1/feedbackCategories", feedbackCategoriesRoutes);
 app.use("/api/v1/givenFeedbacks", givenFeedbackRoutes);
-
-
+app.use("/api/v1/certificateTemplates", certificateTemplatesRoutes);
 
 app.get("/", (req, res) => {
   res.send("Experiment Labs server is running");
@@ -86,7 +82,7 @@ app.listen(port, () => {
 
 // process.on("unhandledRejection", (error) => {
 //   console.log(error.name, error.message);
- /*  app.close(() => {
+/*  app.close(() => {
     process.exit(1);
   }); */
 // });
