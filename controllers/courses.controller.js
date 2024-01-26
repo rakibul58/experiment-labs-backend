@@ -4,6 +4,7 @@ const courseCollection = client.db('experiment-labs').collection('courses');
 const batchCollection = client.db('experiment-labs').collection('batches');
 const weekCollection = client.db('experiment-labs').collection('weeks');
 const chapterCollection = client.db('experiment-labs').collection('chapters');
+const userCollection = client.db("experiment-labs").collection("users");
 
 module.exports.getAllCourses = async (req, res, next) => {
     const courses = await courseCollection.find({}).toArray();
@@ -89,4 +90,36 @@ module.exports.updateACourseData = async (req, res, next) => {
     const updatedCourse = req.body;
     const result = await courseCollection.updateOne({ _id: new ObjectId(courseId) }, { $set: updatedCourse });
     res.send(result);
+}
+
+
+module.exports.getCoursesByUserId = async (req, res, next) => {
+
+    try {
+        const user = await userCollection.findOne({ _id: new ObjectId(req.params.userId) });
+
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+
+        // Extract course IDs from the user's courses array
+        const courseIds = user.courses
+            .filter(course => course.courseId !== null && course.courseId !== undefined)
+            .map(course => {
+                try {
+                    return new ObjectId(course.courseId);
+                } catch (error) {
+                    throw error; // rethrow the error to stop further processing
+                }
+            });
+
+        // Find all courses with the extracted IDs
+        const courses = await courseCollection.find({ _id: { $in: courseIds } }).toArray();
+
+        res.send(courses);
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
 }

@@ -18,4 +18,9 @@ router
     .get(courseControllers.getCoursesByOrganizationId);
 
 
+router
+    .route("/userId/:userId")
+    .get(courseControllers.getCoursesByUserId);
+
+
 module.exports = router;

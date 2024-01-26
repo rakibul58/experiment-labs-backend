@@ -13,22 +13,6 @@ module.exports.getAnUserByEmail = async (req, res, next) => {
     const email = req.query.email;
     const query = { email: email };
     const user = await userCollection.findOne(query);
-
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
-
-    // Extract course IDs from the user's courses array
-    const courseIds = user.courses
-      .filter(course => course.courseId !== null && course.courseId !== undefined)
-      .map(course => ObjectId(course.courseId));
-
-    // Find all courses with the extracted IDs
-    const courses = await courseCollection.find({ _id: { $in: courseIds } }).toArray();
-
-    // Combine user details with course details
-    user.courseDetails = courses;
-
     res.send(user);
   } catch (error) {
     console.error(error);
