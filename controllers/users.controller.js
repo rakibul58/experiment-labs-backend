@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const userCollection = client.db("experiment-labs").collection("users");
+const courseCollection = client.db("experiment-labs").collection("courses");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
@@ -8,10 +9,15 @@ const firebaseUtils = require("../utils/firebaseSignUp");
 const passwordUtils = require("../utils/generatePassword");
 
 module.exports.getAnUserByEmail = async (req, res, next) => {
-  const email = req.query.email;
-  const query = { email: email };
-  const user = await userCollection.findOne(query);
-  res.send(user);
+  try {
+    const email = req.query.email;
+    const query = { email: email };
+    const user = await userCollection.findOne(query);
+    res.send(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 };
 
 module.exports.saveAUser = async (req, res, next) => {
