@@ -117,6 +117,8 @@ module.exports.addStudent = async (req, res) => {
 
 module.exports.addBulkStudent = async (req, res) => {
   const { users, relatedData } = req.body;
+  const insertedUsersData = []; // Array to store inserted user data
+  console.log(req.body);
 
   try {
     // Add users to Firebase using the function
@@ -132,7 +134,6 @@ module.exports.addBulkStudent = async (req, res) => {
         user.email,
         password
       );
-      console.log(user);
 
       if (!result.success) {
         console.error(
@@ -140,21 +141,64 @@ module.exports.addBulkStudent = async (req, res) => {
         );
         // Handle error case: Maybe remove the user from MongoDB?
       } else {
-        // Insert all users into MongoDB
-        const insertedUsers = await userCollection.insertMany(users);
-        const count = await userCollection.countDocuments();
-
-        res.status(200).json({
-          message: "Users added to MongoDB and Firebase successfully",
-          insertedUsers,
-          count,
-        });
+        // Insert the user into MongoDB and store the data in the array
+        const insertedUser = await userCollection.insertOne(user);
+        insertedUsersData.push(user);
       }
     }
+
+    const count = await userCollection.countDocuments();
+
+    res.status(200).json({
+      message: "Users added to MongoDB and Firebase successfully",
+      insertedUsers: insertedUsersData,
+      count,
+    });
   } catch (error) {
     console.error("Error adding users:", error);
     res
       .status(500)
       .json({ message: "Error adding users", error: error.message });
+  }
+};
+
+module.exports.updateUsersInCourseBatch = async (req, res) => {
+  try {
+    const { userEmails, courseId, batchId } = req.body;
+
+    // Ensure the provided courseId and batchId are valid ObjectId
+    const validCourseId = ObjectId.isValid(courseId);
+    const validBatchId = ObjectId.isValid(batchId);
+
+    if (!validCourseId || !validBatchId) {
+      return res.status(400).json({ message: "Invalid courseId or batchId" });
+    }
+
+    // Update users in MongoDB based on email, courseId, and batchId
+    const updatedUsers = await userCollection.updateMany(
+      {
+        email: { $in: userEmails },
+        "courses.courseId": { $ne: courseId },
+        "courses.batchId": { $ne: batchId },
+      },
+      {
+        $addToSet: {
+          courses: {
+            courseId,
+            batchId,
+            // Add more fields to add to the courses array as needed
+          },
+        },
+      }
+    );
+
+    res
+      .status(200)
+      .json({ message: "Users updated successfully", updatedUsers });
+  } catch (error) {
+    console.error("Error updating users:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };

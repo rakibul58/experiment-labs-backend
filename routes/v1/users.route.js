@@ -20,4 +20,6 @@ router.route("/addStudent").post(userControllers.addStudent);
 
 router.route("/addBulkStudent").post(userControllers.addBulkStudent);
 
+router.route("/addToCourse").post(userControllers.updateUsersInCourseBatch);
+
 module.exports = router;
