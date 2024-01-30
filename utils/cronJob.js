@@ -3,6 +3,7 @@ const client = require("../utils/dbConnect");
 const classCollection = client.db('experiment-labs').collection('classes');
 const userCollection = client.db('experiment-labs').collection('users');
 
+
 const addAttendance = async () => {
     const currentDate = new Date();
 
