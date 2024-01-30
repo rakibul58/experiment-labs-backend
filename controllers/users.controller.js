@@ -202,3 +202,31 @@ module.exports.updateUsersInCourseBatch = async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 };
+
+module.exports.getStudentsByOrganization = async (req, res) => {
+  try {
+    const { organizationId } = req.params;
+
+    // Ensure the provided organizationId is a valid ObjectId
+    const validOrganizationId = ObjectId.isValid(organizationId);
+
+    if (!validOrganizationId) {
+      return res.status(400).json({ message: "Invalid organizationId" });
+    }
+
+    // Find all students under the given organization
+    const students = await userCollection
+      .find({
+        organizationId,
+        role: "user",
+      })
+      .toArray();
+
+    res.status(200).json(students);
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
