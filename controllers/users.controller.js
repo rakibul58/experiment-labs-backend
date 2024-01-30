@@ -13,6 +13,8 @@ module.exports.getAnUserByEmail = async (req, res, next) => {
     const email = req.query.email;
     const query = { email: email };
     const user = await userCollection.findOne(query);
+    if (!user)
+      return res.send({ isUser: false });
     res.send(user);
   } catch (error) {
     console.error(error);
