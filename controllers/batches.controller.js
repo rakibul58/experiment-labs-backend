@@ -43,13 +43,49 @@ module.exports.createABatch = async (req, res, next) => {
       },
     ];
 
-    const participantsWithCourses = participants.map((participant) => ({
-      ...participant,
-      courses: courses,
-    }));
+    participantsResult = await Promise.all(
+      participants.map(async (participant) => {
+        const existingParticipant = await userCollection.findOne({
+          email: participant.email,
+        });
 
-    participantsResult = await userCollection.insertMany(
-      participantsWithCourses
+        if (existingParticipant) {
+          // Ensure courses is initialized as an array
+          existingParticipant.courses = existingParticipant.courses || [];
+          // Participant already exists, update the course
+          existingParticipant.courses.push(...courses);
+
+          // Update the existing participant in the collection
+          await userCollection.updateOne(
+            { _id: existingParticipant._id },
+            { $set: { courses: existingParticipant.courses } }
+          );
+
+          return existingParticipant;
+        } else {
+          const login = await firebaseUtils.createUserWithEmailAndPassword(
+            participant.email,
+            participant.password
+          );
+
+          if (!login.success) {
+            console.error(
+              `Failed to create user in Firebase for email: ${participant.email}`
+            );
+            // Handle error case: Maybe remove the user from MongoDB?
+          } else {
+            // Participant does not exist, create a new participant with the course
+            const newUser = {
+              ...participant,
+              courses: courses,
+            };
+
+            // Insert the new participant into the collection
+            const result = await userCollection.insertOne(newUser);
+            return result;
+          }
+        }
+      })
     );
   } else {
     participantsResult = { message: "No Participant" };
