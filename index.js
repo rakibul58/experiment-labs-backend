@@ -31,6 +31,7 @@ const feedbackCategoriesRoutes = require("./routes/v1/feedbackCategories.route")
 const givenFeedbackRoutes = require("./routes/v1/givenFeedbacks.route");
 const certificateTemplatesRoutes = require("./routes/v1/certificateTemplates.route");
 const { startCronJob } = require("./utils/cronJob");
+const statRoutes = require("./routes/v1/stats.route");
 
 //Calling Functions
 startCronJob();
@@ -67,6 +68,7 @@ app.use("/api/v1/redemptionAccesses", redemptionAccessRoutes);
 app.use("/api/v1/feedbackCategories", feedbackCategoriesRoutes);
 app.use("/api/v1/givenFeedbacks", givenFeedbackRoutes);
 app.use("/api/v1/certificateTemplates", certificateTemplatesRoutes);
+app.use("/api/v1/stats", statRoutes);
 
 app.get("/", (req, res) => {
   res.send("Experiment Labs server is running");
