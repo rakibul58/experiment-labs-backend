@@ -22,4 +22,8 @@ router.route("/addBulkStudent").post(userControllers.addBulkStudent);
 
 router.route("/addToCourse").post(userControllers.updateUsersInCourseBatch);
 
+router
+  .route("/students/:organizationId")
+  .get(userControllers.getStudentsByOrganization);
+
 module.exports = router;
