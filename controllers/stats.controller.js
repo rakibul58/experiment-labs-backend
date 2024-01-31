@@ -36,7 +36,7 @@ module.exports.getUsersByOrganizationId = async (req, res, next) => {
         const enrollStudents = await userCollection.countDocuments(courseQuery);
 
         // Query for students with unevaluated result array
-        const resultQuery = { "submitter.organizationId": organizationId, "submitter.role": "user", result: { $exists: true } };
+        const resultQuery = { "submitter.organizationId": organizationId, "submitter.role": "user", "submitter.result" : { $exists: false } };
      
         const unevaluatedStudents = await assignmentSubmitCollection.countDocuments(resultQuery);
 
@@ -44,7 +44,7 @@ module.exports.getUsersByOrganizationId = async (req, res, next) => {
          // Get the start of the current day
          const currentDate = new Date();
          const formattedCurrentDate = currentDate.toISOString().slice(0, 10);
-       
+        
         
         
          // Query for total meetings within today
