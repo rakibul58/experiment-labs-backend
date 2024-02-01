@@ -26,4 +26,6 @@ router
   .route("/students/:organizationId")
   .get(userControllers.getStudentsByOrganization);
 
+router.route("/addDevice/:userEmail").put(userControllers.addDeviceToUser);
+
 module.exports = router;
