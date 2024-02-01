@@ -33,3 +33,21 @@ module.exports.getOfferByOrganizationId = async (req, res, next) => {
     }
 
 };
+
+
+
+module.exports.deleteAnOffer = async (req, res, next) => {
+
+    try {
+        const id = req.params.id;
+        const result = await offerCollection.deleteOne({ _id: new ObjectId(id) });
+        res.send({
+            success: true,
+            result
+        });
+
+    } catch (error) {
+        res.send(error)
+    }
+
+}

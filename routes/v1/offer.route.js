@@ -9,6 +9,11 @@ router
 
 
 router
+    .route("/:id")
+    .delete(offerControllers.deleteAnOffer);
+
+
+router
     .route("/organizationId/:organizationId")
     .get(offerControllers.getOfferByOrganizationId);
 
