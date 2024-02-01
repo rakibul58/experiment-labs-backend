@@ -13,6 +13,8 @@ module.exports.getAnUserByEmail = async (req, res, next) => {
     const email = req.query.email;
     const query = { email: email };
     const user = await userCollection.findOne(query);
+    if (!user)
+      return res.send({ isUser: false });
     res.send(user);
   } catch (error) {
     console.error(error);
@@ -26,11 +28,12 @@ module.exports.saveAUser = async (req, res, next) => {
   const email = await userCollection.findOne({ email: user.email });
 
   if (email) {
-    return res.status(400).json({ message: "sorry a user already exists" });
+    return res.status(400).json({ message: "This user already exists" });
   }
   const result = await userCollection.insertOne(user);
   res.send(result);
 };
+
 
 module.exports.getAllMentors = async (req, res, next) => {
   const organizationId = req.params.organizationId;
