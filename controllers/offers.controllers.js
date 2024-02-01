@@ -36,6 +36,27 @@ module.exports.getOfferByOrganizationId = async (req, res, next) => {
 
 
 
+module.exports.updateAnOffer = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const updatedOfferData = req.body;
+
+        const result = await offerCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: updatedOfferData }
+        );
+
+        res.send({
+            success: true,
+            result
+        });
+    } catch (error) {
+        res.send(error);
+    }
+};
+
+
+
 module.exports.deleteAnOffer = async (req, res, next) => {
 
     try {

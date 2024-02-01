@@ -10,6 +10,7 @@ router
 
 router
     .route("/:id")
+    .put(offerControllers.updateAnOffer)
     .delete(offerControllers.deleteAnOffer);
 
 
