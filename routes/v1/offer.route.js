@@ -8,4 +8,9 @@ router
     .post(offerControllers.postAnOffer);
 
 
+router
+    .route("/organizationId/:organizationId")
+    .get(offerControllers.getOfferByOrganizationId);
+
+
 module.exports = router;

@@ -16,3 +16,20 @@ module.exports.postAnOffer = async (req, res, next) => {
     }
 
 };
+
+
+
+module.exports.getOfferByOrganizationId = async (req, res, next) => {
+
+    try {
+        const organizationId = req.params.organizationId;
+        const result = await offerCollection.find({ organizationId }).toArray();
+        res.send({
+            success: true,
+            result
+        });
+    } catch (error) {
+        res.send(error)
+    }
+
+};
