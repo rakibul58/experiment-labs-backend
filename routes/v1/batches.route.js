@@ -9,4 +9,8 @@ router.route("/courseId/:courseId").get(batchControllers.getBatchesByCourseId);
 
 router.route("/batchId/:batchId").get(batchControllers.getBatchesByBatchId);
 
+router
+  .route("/updateBatch/batchId/:batchId")
+  .put(batchControllers.updateACourseData);
+
 module.exports = router;
