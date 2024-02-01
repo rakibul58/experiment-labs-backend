@@ -181,7 +181,7 @@ module.exports.createABatch = async (req, res, next) => {
 
 module.exports.updateACourseData = async (req, res, next) => {
   try {
-    const batchId = req.params.id;
+    const batchId = req.params.batchId;
     const updatedBatch = req.body;
     const result = await batchCollection.updateOne(
       { _id: new ObjectId(batchId) },
