@@ -28,4 +28,8 @@ router
 
 router.route("/addDevice/:userEmail").put(userControllers.addDeviceToUser);
 
+router
+  .route("/removeDevice/:userEmail")
+  .put(userControllers.removeDeviceFromUser);
+
 module.exports = router;

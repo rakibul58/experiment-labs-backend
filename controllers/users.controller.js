@@ -281,3 +281,54 @@ module.exports.addDeviceToUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+module.exports.removeDeviceFromUser = async (req, res) => {
+  try {
+    const { userEmail } = req.params; // Extract the userEmail from the request parameters
+    const { device } = req.body; // Extract the deviceId from the request body
+
+    // Find the user with the specified userEmail
+    const user = await userCollection.findOne({ email: userEmail });
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the user has devices
+    if (!user.devices || user.devices.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "User does not have any devices" });
+    }
+
+    // Find the index of the device in the user's array
+    const deviceIndex = user.devices.findIndex((item) => item === device);
+
+    // Check if the device is not found
+    if (deviceIndex === -1) {
+      return res.status(404).json({ message: "Device not found for the user" });
+    }
+
+    // Remove the device from the user's array
+    user.devices.splice(deviceIndex, 1);
+
+    // Update the user in the collection
+    const updateResult = await userCollection.updateOne(
+      { email: userEmail },
+      { $set: { devices: user.devices } }
+    );
+
+    // Check if the update was successful
+    if (updateResult.modifiedCount > 0) {
+      return res
+        .status(200)
+        .json({ message: "Device removed successfully", user });
+    } else {
+      return res.status(500).json({ message: "Failed to update user" });
+    }
+  } catch (error) {
+    console.error("Error removing device from user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
