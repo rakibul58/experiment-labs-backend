@@ -13,8 +13,7 @@ module.exports.getAnUserByEmail = async (req, res, next) => {
     const email = req.query.email;
     const query = { email: email };
     const user = await userCollection.findOne(query);
-    if (!user)
-      return res.send({ isUser: false });
+    if (!user) return res.send({ isUser: false });
     res.send(user);
   } catch (error) {
     console.error(error);
@@ -33,7 +32,6 @@ module.exports.saveAUser = async (req, res, next) => {
   const result = await userCollection.insertOne(user);
   res.send(result);
 };
-
 
 module.exports.getAllMentors = async (req, res, next) => {
   const organizationId = req.params.organizationId;
@@ -329,6 +327,55 @@ module.exports.removeDeviceFromUser = async (req, res) => {
     }
   } catch (error) {
     console.error("Error removing device from user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.updateUserData = async (req, res) => {
+  try {
+    const { userEmail } = req.params; // Extract the userEmail from the request parameters
+    const updatedData = req.body; // Extract the updated data from the request body
+
+    // Find the user with the specified userEmail
+    const user = await userCollection.findOne({ email: userEmail });
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Compare and update the user data
+    for (const key in updatedData) {
+      if (Object.hasOwnProperty.call(updatedData, key)) {
+        // Check if the field exists in the user data
+        if (user[key] !== undefined) {
+          // Update the field if it has changed
+          if (user[key] !== updatedData[key]) {
+            user[key] = updatedData[key];
+          }
+        } else {
+          // Add the field if it doesn't exist in the user data
+          user[key] = updatedData[key];
+        }
+      }
+    }
+
+    // Update the user in the collection
+    const updateResult = await userCollection.updateOne(
+      { email: userEmail },
+      { $set: user }
+    );
+
+    // Check if the update was successful
+    if (updateResult.modifiedCount > 0) {
+      return res
+        .status(200)
+        .json({ message: "User data updated successfully", user });
+    } else {
+      return res.status(500).json({ message: "Failed to update user data" });
+    }
+  } catch (error) {
+    console.error("Error updating user data:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
