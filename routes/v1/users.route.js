@@ -32,4 +32,8 @@ router
   .route("/removeDevice/:userEmail")
   .put(userControllers.removeDeviceFromUser);
 
+router
+  .route("/updateUser/email/:userEmail")
+  .put(userControllers.updateUserData);
+
 module.exports = router;
