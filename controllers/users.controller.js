@@ -63,6 +63,7 @@ module.exports.checkoutPayment = async (req, res, next) => {
 };
 
 module.exports.verifyPayment = async (req, res, next) => {
+  console.log("Entered");
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
     req.body;
   const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -75,6 +76,7 @@ module.exports.verifyPayment = async (req, res, next) => {
   const isAuthentic = expectedSignature === razorpay_signature;
 
   if (isAuthentic) {
+    console.log("printed");
     res.redirect("http://localhost:3000/courseAccess");
   } else {
     res.status(400).json({
