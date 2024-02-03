@@ -72,3 +72,18 @@ module.exports.deleteAnOffer = async (req, res, next) => {
     }
 
 }
+
+
+module.exports.getOffersByBatchId = async (req, res, next) => {
+    try {
+        const batchId = req.params.batchId;
+        const result = await offerCollection.find({ selectedBatches: { $in: [batchId] } }).toArray();
+
+        res.send({
+            success: true,
+            result
+        });
+    } catch (error) {
+        res.send(error);
+    }
+};
