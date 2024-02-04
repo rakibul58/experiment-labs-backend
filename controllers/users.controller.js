@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const userCollection = client.db("experiment-labs").collection("users");
+const receiptCollection = client.db("experiment-labs").collection("receipts");
 const courseCollection = client.db("experiment-labs").collection("courses");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
@@ -62,26 +63,92 @@ module.exports.checkoutPayment = async (req, res, next) => {
   });
 };
 
+
+
+
 module.exports.verifyPayment = async (req, res, next) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-    req.body;
+  // console.log("Entered");
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    razorpay_key_secret, batchId,
+    coupon,
+    couponId,
+    courseId,
+    discountAmount,
+    email,
+    organizationId,
+    organizationName,
+    originalPrice,
+    paidAmount,
+    userId
+  } = req.body;
+
   const body = razorpay_order_id + "|" + razorpay_payment_id;
 
   const expectedSignature = crypto
     .createHmac("sha256", razorpay_key_secret)
     .update(body.toString())
-    .digest("hex");
+    .digest("hex"); { razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpay_key_secret }
 
   const isAuthentic = expectedSignature === razorpay_signature;
 
   if (isAuthentic) {
-    res.redirect("http://localhost:3000/courseAccess");
+
+    const newReceipt = {
+      batchId,
+      coupon,
+      couponId,
+      courseId,
+      discountAmount,
+      UserEmail: email,
+      organizationId,
+      organizationName,
+      originalPrice,
+      paidAmount,
+      userId,
+      razorpay_payment_id,
+      razorpay_order_id,
+      paidAt: new Date()
+    };
+
+    const result = await receiptCollection.insertOne(newReceipt);
+
+    const receiptId = result.insertedId;
+
+    const updateResult = await userCollection.updateOne(
+      { email: email }, // Find the document by its email
+      {
+        $push: {
+          courses: {
+            courseId,
+            batchId,
+            enrollDate: new Date(),
+            paidAmount,
+            receiptId
+          }
+        }
+      } // Push the newObject into the array
+    );
+
+
+    res.send({
+      success: true,
+      result,
+      updateResult
+    })
+
+
   } else {
-    res.status(400).json({
+    res.json({
       success: false,
     });
   }
 };
+
+
+
 
 module.exports.addStudent = async (req, res) => {
   const user = req.body;

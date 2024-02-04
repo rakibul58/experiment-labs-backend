@@ -19,4 +19,9 @@ router
     .get(offerControllers.getOfferByOrganizationId);
 
 
+router
+    .route("/batchId/:batchId")
+    .get(offerControllers.getOffersByBatchId);
+
+
 module.exports = router;
