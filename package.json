@@ -25,6 +25,7 @@
     "nodemailer": "^6.9.8",
     "nodemon": "^2.0.19",
     "razorpay": "^2.9.2",
+    "socket.io": "^4.7.4",
     "stripe": "^10.3.0"
   }
 }
