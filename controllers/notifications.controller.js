@@ -9,7 +9,9 @@ const notificationCollection = client
   .collection("notifications");
 
 const server = http.createServer(app);
-const io = socketIo(server);
+// const io = socketIo(server);
+
+const { getIo } = require("../socketSetup");
 
 module.exports.getAllNotifications = async (req, res) => {
   const notifications = await notificationCollection.find().toArray();
@@ -22,15 +24,15 @@ module.exports.addNotification = async (req, res) => {
   const result = await notificationCollection.insertOne(notification);
 
   // Send the new notification to all connected clients
-  io.emit("notification", notification);
+  getIo().emit("notification", notification);
 
   res.json(result);
 };
 
-io.on("connection", (socket) => {
-  console.log("A user connected");
+// io.on("connection", (socket) => {
+//   console.log("A user connected");
 
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
-  });
-});
+//   socket.on("disconnect", () => {
+//     console.log("User disconnected");
+//   });
+// });
