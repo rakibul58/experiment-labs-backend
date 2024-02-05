@@ -7,4 +7,8 @@ router.route("/").get(notificationControllers.getAllNotifications);
 
 router.route("/addNotification").post(notificationControllers.addNotification);
 
+router
+  .route("/getNotification/userEmail/:userEmail")
+  .get(notificationControllers.getUserNotifications);
+
 module.exports = router;
