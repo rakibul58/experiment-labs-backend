@@ -327,8 +327,8 @@ module.exports.getStudentsByOrganization = async (req, res) => {
 
 module.exports.addDeviceToUser = async (req, res) => {
   try {
-    const { userEmail } = req.params; // Extract the userEmail from the request parameters
-    const { device } = req.body; // Extract the device information from the request body
+    const { userEmail } = req.params;
+    const { device } = req.body;
 
     // Find the user with the specified userEmail
     const user = await userCollection.findOne({ email: userEmail });
@@ -338,16 +338,26 @@ module.exports.addDeviceToUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Fetch organization data using the organizationId from the user
+    const organization = await organizationCollection.findOne({
+      _id: user.organizationId,
+    });
+
+    // Check if the organization exists
+    if (!organization) {
+      return res.status(404).json({ message: "Organization not found" });
+    }
+
     // Check the number of devices in the user's array
     if (!user.devices) {
       user.devices = [];
     }
 
-    // Check if the user already has three devices
-    if (user.devices.length >= 3) {
+    // Check if the user already has reached the maximum allowed devices
+    if (user.devices.length >= organization.maxDeviceCount) {
       return res
         .status(400)
-        .json({ message: "User already has three devices" });
+        .json({ message: "User has reached the maximum allowed devices" });
     }
 
     // Add the new device to the user's array
