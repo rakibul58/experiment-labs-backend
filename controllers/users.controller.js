@@ -3,6 +3,7 @@ const client = require("../utils/dbConnect");
 const userCollection = client.db("experiment-labs").collection("users");
 const receiptCollection = client.db("experiment-labs").collection("receipts");
 const courseCollection = client.db("experiment-labs").collection("courses");
+const organizationCollection = client.db("experiment-labs").collection("organizations");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
@@ -164,10 +165,13 @@ module.exports.verifyPayment = async (req, res, next) => {
       );
     }
 
+    const userData = await userCollection.findOne({ email: email });
+
     res.send({
       success: true,
       result,
       updateResult,
+      userData
     });
   } else {
     res.json({
@@ -297,6 +301,7 @@ module.exports.updateUsersInCourseBatch = async (req, res) => {
   }
 };
 
+
 module.exports.getStudentsByOrganization = async (req, res) => {
   try {
     const { organizationId } = req.params;
@@ -340,7 +345,7 @@ module.exports.addDeviceToUser = async (req, res) => {
 
     // Fetch organization data using the organizationId from the user
     const organization = await organizationCollection.findOne({
-      _id: user.organizationId,
+      _id: new ObjectId(user.organizationId),
     });
 
     // Check if the organization exists
