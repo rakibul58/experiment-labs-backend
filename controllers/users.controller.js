@@ -63,16 +63,14 @@ module.exports.checkoutPayment = async (req, res, next) => {
   });
 };
 
-
-
-
 module.exports.verifyPayment = async (req, res, next) => {
   // console.log("Entered");
   const {
     razorpay_order_id,
     razorpay_payment_id,
     razorpay_signature,
-    razorpay_key_secret, batchId,
+    razorpay_key_secret,
+    batchId,
     coupon,
     couponId,
     courseId,
@@ -82,7 +80,7 @@ module.exports.verifyPayment = async (req, res, next) => {
     organizationName,
     originalPrice,
     paidAmount,
-    userId
+    userId,
   } = req.body;
 
   const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -90,12 +88,17 @@ module.exports.verifyPayment = async (req, res, next) => {
   const expectedSignature = crypto
     .createHmac("sha256", razorpay_key_secret)
     .update(body.toString())
-    .digest("hex"); { razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpay_key_secret }
+    .digest("hex");
+  {
+    razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      razorpay_key_secret;
+  }
 
   const isAuthentic = expectedSignature === razorpay_signature;
 
   if (isAuthentic) {
-
     const newReceipt = {
       batchId,
       coupon,
@@ -110,45 +113,68 @@ module.exports.verifyPayment = async (req, res, next) => {
       userId,
       razorpay_payment_id,
       razorpay_order_id,
-      paidAt: new Date()
+      paidAt: new Date(),
     };
 
     const result = await receiptCollection.insertOne(newReceipt);
 
     const receiptId = result.insertedId;
 
+    // const updateResult = await userCollection.updateOne(
+    //   { email: email }, // Find the document by its email
+    //   {
+    //     $push: {
+    //       courses: {
+    //         courseId,
+    //         batchId,
+    //         enrollDate: new Date(),
+    //         paidAmount,
+    //         receiptId
+    //       }
+    //     }
+    //   } // Push the newObject into the array
+    // );
     const updateResult = await userCollection.updateOne(
-      { email: email }, // Find the document by its email
+      { email: email, "courses.courseId": courseId }, // Find the document by its email and check if courseId is present
       {
-        $push: {
-          courses: {
-            courseId,
-            batchId,
-            enrollDate: new Date(),
-            paidAmount,
-            receiptId
-          }
-        }
-      } // Push the newObject into the array
+        $set: {
+          "courses.$.batchId": batchId,
+          "courses.$.enrollDate": new Date(),
+          "courses.$.paidAmount": paidAmount,
+          "courses.$.receiptId": receiptId,
+        },
+      }
     );
 
+    if (updateResult.modifiedCount === 0) {
+      // The courseId doesn't exist, push a new object
+      await userCollection.updateOne(
+        { email: email },
+        {
+          $push: {
+            courses: {
+              courseId,
+              batchId,
+              enrollDate: new Date(),
+              paidAmount,
+              receiptId,
+            },
+          },
+        }
+      );
+    }
 
     res.send({
       success: true,
       result,
-      updateResult
-    })
-
-
+      updateResult,
+    });
   } else {
     res.json({
       success: false,
     });
   }
 };
-
-
-
 
 module.exports.addStudent = async (req, res) => {
   const user = req.body;
