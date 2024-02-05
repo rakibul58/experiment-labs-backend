@@ -164,10 +164,13 @@ module.exports.verifyPayment = async (req, res, next) => {
       );
     }
 
+    const userData = await userCollection.findOne({ email: email });
+
     res.send({
       success: true,
       result,
       updateResult,
+      userData
     });
   } else {
     res.json({
