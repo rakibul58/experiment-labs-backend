@@ -35,12 +35,21 @@ router
 router
     .route("/taskType/:taskType/taskId/:taskId/chapterId/:chapterId")
     .post(taskControllers.addTaskCompletionDetails);
+
+
 router
     .route("/updateEvent/:email")
     .post(taskControllers.updateEvent);
+
+
 router
     .route("/:id/addEvent")
     .post(taskControllers.addEvent);
+
+
+router
+    .route("/assignments/taskId/:taskId")
+    .delete(taskControllers.removeFile);
 
 
 module.exports = router;

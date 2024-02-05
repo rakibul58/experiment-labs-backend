@@ -724,7 +724,7 @@ module.exports.updateEvent = async (req, res) => {
             const updateResult = await scheduleCollection.updateOne(
                 { 'usersession.user.email': userEmail },
                 {
-                    $set: { 'usersession.user.email': userEmail, events: newEventsData}
+                    $set: { 'usersession.user.email': userEmail, events: newEventsData }
                 }
             );
 
@@ -793,5 +793,23 @@ module.exports.addEvent = async (req, res, next) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+
+module.exports.removeFile = async (req, res, next) => {
+    const assignmentId = req.params.taskId;
+    try {
+        const result = await assignmentCollection.updateOne(
+            { _id: new ObjectId(assignmentId) }, // Use the correct identifier for your assignment
+            { $set: { file: "" } }
+        );
+
+        res.send({
+            success: true,
+            result
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error removing file data', error: error.message });
+    }
+}
 
 
