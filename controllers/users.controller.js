@@ -50,6 +50,8 @@ module.exports.getAllMentors = async (req, res, next) => {
   res.send(result);
 };
 
+
+
 module.exports.checkoutPayment = async (req, res, next) => {
   const { price, paymentInstance } = req.body;
   const instance = new Razorpay(paymentInstance);
@@ -63,6 +65,7 @@ module.exports.checkoutPayment = async (req, res, next) => {
     order,
   });
 };
+
 
 module.exports.verifyPayment = async (req, res, next) => {
   // console.log("Entered");
