@@ -4,6 +4,7 @@ const userCollection = client.db("experiment-labs").collection("users");
 const receiptCollection = client.db("experiment-labs").collection("receipts");
 const courseCollection = client.db("experiment-labs").collection("courses");
 const organizationCollection = client.db("experiment-labs").collection("organizations");
+const offerCollection = client.db('experiment-labs').collection('offers');
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
@@ -170,11 +171,22 @@ module.exports.verifyPayment = async (req, res, next) => {
 
     const userData = await userCollection.findOne({ email: email });
 
+
+    let couponResult = {};
+
+    if (couponId)
+      couponResult = await offerCollection.updateOne(
+        { _id: new ObjectId(couponId) },
+        { $inc: { usedCount: 1 } },
+        { upsert: true }
+      );
+
     res.send({
       success: true,
       result,
       updateResult,
-      userData
+      userData,
+      couponResult
     });
   } else {
     res.json({
