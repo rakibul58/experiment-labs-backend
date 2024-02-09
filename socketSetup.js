@@ -16,7 +16,7 @@ function setupSocket(server) {
     "https://experimentlabs.in",
   ];
 
-  const io = socketIo(server, {
+  io = socketIo(server, {
     cors: {
       origin: allowedOrigins,
     },
