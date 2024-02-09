@@ -2,11 +2,11 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const http = require("http");
-const socketIo = require("socket.io");
 const app = express();
 const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
+app.use(express.static("front"));
 app.use(express.urlencoded({ extended: true }));
 const { setupSocket } = require("./socketSetup");
 
@@ -53,9 +53,9 @@ app.get("/", (req, res) => {
   res.send("Hello world");
 });
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static("front"));
+// app.use(cors());
+// app.use(express.json());
+// app.use(express.static("front"));
 
 // Error handler middleware
 app.use(errorHandler);
