@@ -2,6 +2,7 @@ const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const userCollection = client.db("experiment-labs").collection("users");
 const receiptCollection = client.db("experiment-labs").collection("receipts");
+
 const courseCollection = client.db("experiment-labs").collection("courses");
 const organizationCollection = client.db("experiment-labs").collection("organizations");
 const offerCollection = client.db('experiment-labs').collection('offers');
@@ -193,6 +194,22 @@ module.exports.verifyPayment = async (req, res, next) => {
     res.json({
       success: false,
     });
+  }
+};
+
+module.exports.getAllPaidInfo = async (req, res) => {
+  const organizationId = req.params.organizationId;
+  console.log(organizationId); // For debugging, you can remove this line in production
+
+  try {
+    const result = await receiptCollection
+      .find({ organizationId: organizationId })
+      .toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.error("Error retrieving data:", error);
+    res.status(500).send("Internal Server Error");
   }
 };
 

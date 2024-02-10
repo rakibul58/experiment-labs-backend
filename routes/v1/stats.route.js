@@ -5,7 +5,8 @@ const router = express.Router();
 
 router
   .route("/organizationId/:organizationId")
-  .get(statsControllers.getUsersByOrganizationId);
+  .get(statsControllers.getUsersOverviewByOrganizationId);
+
 
 
   module.exports = router;

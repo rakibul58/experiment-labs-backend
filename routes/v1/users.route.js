@@ -35,6 +35,10 @@ router
 router
   .route("/updateUser/email/:userEmail")
   .put(userControllers.updateUserData);
+  
+  router
+  .route("/getAllPaidInfo/organizationId/:organizationId")
+  .get(userControllers.getAllPaidInfo);
 
 
 router

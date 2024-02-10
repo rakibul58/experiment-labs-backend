@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const userCollection = client.db("experiment-labs").collection("users");
+const receiptCollection = client.db("experiment-labs").collection("receipts");
 const assignmentSubmitCollection = client
   .db("experiment-labs")
   .collection("assignments-submit");
@@ -22,7 +23,7 @@ const eventCollection = client.db("experiment-labs").collection("events");
     }
   }; */
 
-module.exports.getUsersByOrganizationId = async (req, res, next) => {
+module.exports.getUsersOverviewByOrganizationId = async (req, res, next) => {
   try {
     const organizationId = req.params.organizationId;
 
@@ -37,17 +38,15 @@ module.exports.getUsersByOrganizationId = async (req, res, next) => {
       courses: { $exists: true, $ne: [] },
     };
 
+    const paidStudentData = await receiptCollection.find({organizationId: organizationId}).toArray();
+
     const enrollStudents = await userCollection.countDocuments(courseQuery);
     const enrollStudentsData = await userCollection.find(courseQuery).toArray();
-    // console.log(enrollStudentsData);
+     console.log(paidStudentData);
 
-    const totalPaidAmount = enrollStudentsData.reduce((total, student) => {
-      if (student.courses && Array.isArray(student.courses)) {
-        student.courses.forEach((course) => {
-          if (course.paidAmount) {
-            total += course.paidAmount;
-          }
-        });
+    const totalPaidAmount = paidStudentData.reduce((total, student) => {
+      if (student.paidAmount) {
+        total += student.paidAmount;
       }
       return total;
     }, 0);
