@@ -5,6 +5,7 @@ const receiptCollection = client.db("experiment-labs").collection("receipts");
 const courseCollection = client.db("experiment-labs").collection("courses");
 const organizationCollection = client.db("experiment-labs").collection("organizations");
 const offerCollection = client.db('experiment-labs').collection('offers');
+const interactionCollection = client.db('experiment-labs').collection('interactions');
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
@@ -502,3 +503,13 @@ module.exports.updateUserData = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+
+module.exports.addAnInteraction = async (req, res) =>{
+
+  const result = await interactionCollection.insertOne(req.body);
+
+  res.send(result);
+
+}

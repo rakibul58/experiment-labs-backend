@@ -36,4 +36,9 @@ router
   .route("/updateUser/email/:userEmail")
   .put(userControllers.updateUserData);
 
+
+router
+  .route("/interactions")
+  .post(userControllers.addAnInteraction);
+
 module.exports = router;
