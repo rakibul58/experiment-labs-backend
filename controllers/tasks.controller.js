@@ -689,7 +689,9 @@ module.exports.addTaskCompletionDetails = async (req, res, next) => {
       if (user) {
         // Check if the user already has a course entry with the same courseId
         const existingCourseIndex = user.courses
-          ? user.courses.findIndex((course) => course.courseId === courseId)
+          ? user.courses.findIndex(
+              (course) => course.courseId === chapterDocument?.courseId
+            )
           : -1;
 
         if (existingCourseIndex !== -1) {

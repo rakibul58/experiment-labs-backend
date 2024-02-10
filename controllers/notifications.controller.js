@@ -102,6 +102,18 @@ const getStudentNotifications = async (user) => {
 
 // Helper function to get notifications for 'Admin' type
 const getAdminNotifications = async (user) => {
-  // Implement logic to fetch notifications for admin
-  // You can add similar logic for other recipient types
+  return notificationCollection
+    .find({
+      "recipient.organizationId": user.organizationId,
+      $or: [
+        {
+          "recipient.type": "Admins",
+        },
+        {
+          "recipient.type": "Specific Admin",
+          "recipient.recipientEmail": user.email,
+        },
+      ],
+    })
+    .toArray();
 };
