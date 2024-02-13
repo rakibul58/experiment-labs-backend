@@ -5,7 +5,7 @@ const router = express.Router();
 
 router
     .route("/")
-    .post(mailController.sendEmail);
+    .post(mailController.sendAnEmail);
 
 
 module.exports = router;

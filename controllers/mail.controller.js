@@ -1,33 +1,87 @@
+const { ObjectId } = require("mongodb");
+const client = require("../utils/dbConnect");
 const nodemailer = require('nodemailer');
+
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.smtp_server,
+    port: process.env.smtp_port,
     auth: {
-        type: 'OAuth2',
-        user: process.env.MAIL_USERNAME,
-        pass: process.env.MAIL_PASSWORD,
-        clientId: process.env.OAUTH_CLIENTID,
-        clientSecret: process.env.OAUTH_CLIENT_SECRET,
-        refreshToken: process.env.OAUTH_REFRESH_TOKEN
-    }
+        user: process.env.smtp_login,
+        pass: process.env.smtp_key,
+    },
 });
 
-module.exports.sendEmail = async (req, res, next) => {
 
-    const data = req.body;
-    console.log(transporter);
-    const mailOptions = {
-        from: data?.from,
-        to: data?.to,
-        subject: data?.subject + ` sent by ${data?.from}`,
-        text: data?.message
-    };
+module.exports.sendAnEmail = async (req, res) => {
+    try {
+        const { from, to, subject, message } = req.body;
+        const mailOptions = {
+            from: from,
+            to: to,
+            subject: subject,
+            text: message
+        };
 
-    transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            res.send({ "Success": false });
-        } else {
-            res.send({ "Success": true });
-        }
-    });
+        const isSent = await transporter.sendMail(mailOptions);
+        console.log(isSent);
 
+        if (isSent)
+            res.send({ success: true, message: "Email Sent Successfully" });
+
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Failed to Send Mail' });
+    }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const nodemailer = require('nodemailer');
+// const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//         type: 'OAuth2',
+//         user: process.env.MAIL_USERNAME,
+//         pass: process.env.MAIL_PASSWORD,
+//         clientId: process.env.OAUTH_CLIENTID,
+//         clientSecret: process.env.OAUTH_CLIENT_SECRET,
+//         refreshToken: process.env.OAUTH_REFRESH_TOKEN
+//     }
+// });
+
+// module.exports.sendEmail = async (req, res, next) => {
+
+//     const data = req.body;
+//     console.log(transporter);
+//     const mailOptions = {
+//         from: data?.from,
+//         to: data?.to,
+//         subject: data?.subject + ` sent by ${data?.from}`,
+//         text: data?.message
+//     };
+
+//     transporter.sendMail(mailOptions, function (error, info) {
+//         if (error) {
+//             res.send({ "Success": false });
+//         } else {
+//             res.send({ "Success": true });
+//         }
+//     });
+
+// };

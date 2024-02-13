@@ -179,7 +179,7 @@ module.exports.createABatch = async (req, res, next) => {
   });
 };
 
-module.exports.updateACourseData = async (req, res, next) => {
+module.exports.updateABatchData = async (req, res, next) => {
   try {
     const batchId = req.params.batchId;
     const updatedBatch = req.body;
