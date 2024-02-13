@@ -11,6 +11,6 @@ router.route("/batchId/:batchId").get(batchControllers.getBatchesByBatchId);
 
 router
   .route("/updateBatch/batchId/:batchId")
-  .put(batchControllers.updateACourseData);
+  .put(batchControllers.updateABatchData);
 
 module.exports = router;

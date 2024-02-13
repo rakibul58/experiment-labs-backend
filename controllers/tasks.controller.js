@@ -153,6 +153,7 @@ module.exports.addATask = async (req, res, next) => {
     taskName,
     batches: batches,
     contentStage: task?.contentStage,
+    taskDrip: task?.taskDrip
   };
 
   const updatedDoc = {
@@ -434,6 +435,7 @@ module.exports.updateATask = async (req, res, next) => {
       $set: {
         "tasks.$.taskName": updatedTask.taskName,
         "tasks.$.batches": updatedTask.batches,
+        "tasks.$.taskDrip": updatedTask.taskDrip,
       },
     };
     result = await chapterCollection.updateOne(chapterFilter, chapterUpdate);
