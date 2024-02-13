@@ -187,6 +187,9 @@ module.exports.updateABatchData = async (req, res, next) => {
       { _id: new ObjectId(batchId) },
       { $set: updatedBatch }
     );
+
+    
+
     res.send(result);
   } catch (error) {
     console.error(error);
