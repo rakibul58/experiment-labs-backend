@@ -40,4 +40,9 @@ router
   .route("/getAllPaidInfo/organizationId/:organizationId")
   .get(userControllers.getAllPaidInfo);
 
+
+router
+  .route("/interactions")
+  .post(userControllers.addAnInteraction);
+
 module.exports = router;
