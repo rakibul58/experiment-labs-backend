@@ -26,3 +26,18 @@ module.exports.getBundlesByOrganizationId = async (req, res, next) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+module.exports.updateABundleData = async (req, res, next) => {
+  try {
+    const bundleId = req.params.id;
+    const updatedBundle = req.body;
+    const result = await bundleCollection.updateOne(
+      { _id: new ObjectId(bundleId) },
+      { $set: updatedBundle }
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching user notifications:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
