@@ -179,7 +179,7 @@ module.exports.createABatch = async (req, res, next) => {
   });
 };
 
-module.exports.updateABatchData = async (req, res, next) => {
+/* module.exports.updateACourseData = async (req, res, next) => {
   try {
     const batchId = req.params.batchId;
     const updatedBatch = req.body;
@@ -195,4 +195,41 @@ module.exports.updateABatchData = async (req, res, next) => {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
+}; */
+
+
+
+module.exports.updateABatchData = async (req, res, next) => {
+  try {
+    const batchId = req.params.batchId;
+    const updatedBatch = req.body;
+
+    const result = await batchCollection.updateOne(
+      { _id: new ObjectId(batchId) },
+      { $set: updatedBatch }
+    );
+
+    const updateBatchName = await chapterCollection.updateMany(
+      { "tasks.batches.batchId": batchId },
+      { $set: { "tasks.$[].batches.$[batchIndex].batchName": updatedBatch.batchName } },
+      { arrayFilters: [{ "batchIndex.batchId": batchId }] }
+    );
+
+    // Check if either of the update operations failed
+    if (result.modifiedCount === 1 && updateBatchName.modifiedCount > 0) {
+      // Both updates were successful
+      res.status(200).json({ message: "Batch data updated successfully" });
+    } else if (result.modifiedCount !== 1) {
+      // Batch update failed
+      res.status(404).json({ message: "Batch not found or not updated" });
+    } else {
+      // Batch name update failed
+      res.status(404).json({ message: "Batch name not updated" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 };
+
+
