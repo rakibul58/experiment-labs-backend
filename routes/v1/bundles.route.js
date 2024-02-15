@@ -9,7 +9,7 @@ router.route("/bundleId/:bundleId").get(bundleControllers.getABundle);
 
 router
   .route("/updateBundle/bundleId/:bundleId")
-  .get(bundleControllers.getABundle);
+  .put(bundleControllers.updateABundleData);
 
 router
   .route("/organizationId/:organizationId")

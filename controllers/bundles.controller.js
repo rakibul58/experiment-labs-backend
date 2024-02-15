@@ -29,7 +29,7 @@ module.exports.getBundlesByOrganizationId = async (req, res, next) => {
 
 module.exports.updateABundleData = async (req, res, next) => {
   try {
-    const bundleId = req.params.id;
+    const bundleId = req.params.bundleId;
     const updatedBundle = req.body;
     const result = await bundleCollection.updateOne(
       { _id: new ObjectId(bundleId) },
