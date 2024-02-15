@@ -8,6 +8,10 @@ router.route("/").post(bundleControllers.addABundle);
 router.route("/bundleId/:bundleId").get(bundleControllers.getABundle);
 
 router
+  .route("/updateBundle/bundleId/:bundleId")
+  .put(bundleControllers.updateABundleData);
+
+router
   .route("/organizationId/:organizationId")
   .get(bundleControllers.getBundlesByOrganizationId);
 
