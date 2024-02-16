@@ -24,4 +24,9 @@ router
     .get(offerControllers.getOffersByBatchId);
 
 
+router
+    .route("/bundleId/:bundleId")
+    .get(offerControllers.getOffersByBundleId);
+
+
 module.exports = router;
