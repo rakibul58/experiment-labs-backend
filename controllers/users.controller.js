@@ -4,9 +4,13 @@ const userCollection = client.db("experiment-labs").collection("users");
 const receiptCollection = client.db("experiment-labs").collection("receipts");
 
 const courseCollection = client.db("experiment-labs").collection("courses");
-const organizationCollection = client.db("experiment-labs").collection("organizations");
-const offerCollection = client.db('experiment-labs').collection('offers');
-const interactionCollection = client.db('experiment-labs').collection('interactions');
+const organizationCollection = client
+  .db("experiment-labs")
+  .collection("organizations");
+const offerCollection = client.db("experiment-labs").collection("offers");
+const interactionCollection = client
+  .db("experiment-labs")
+  .collection("interactions");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
@@ -53,8 +57,6 @@ module.exports.getAllMentors = async (req, res, next) => {
   res.send(result);
 };
 
-
-
 module.exports.checkoutPayment = async (req, res, next) => {
   const { price, paymentInstance } = req.body;
   const instance = new Razorpay(paymentInstance);
@@ -68,7 +70,6 @@ module.exports.checkoutPayment = async (req, res, next) => {
     order,
   });
 };
-
 
 module.exports.verifyPayment = async (req, res, next) => {
   // console.log("Entered");
@@ -173,7 +174,6 @@ module.exports.verifyPayment = async (req, res, next) => {
 
     const userData = await userCollection.findOne({ email: email });
 
-
     let couponResult = {};
 
     if (couponId)
@@ -188,7 +188,7 @@ module.exports.verifyPayment = async (req, res, next) => {
       result,
       updateResult,
       userData,
-      couponResult
+      couponResult,
     });
   } else {
     res.json({
@@ -333,7 +333,6 @@ module.exports.updateUsersInCourseBatch = async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 };
-
 
 module.exports.getStudentsByOrganization = async (req, res) => {
   try {
@@ -521,12 +520,70 @@ module.exports.updateUserData = async (req, res) => {
   }
 };
 
-
-
-module.exports.addAnInteraction = async (req, res) =>{
-
+module.exports.addAnInteraction = async (req, res) => {
   const result = await interactionCollection.insertOne(req.body);
 
   res.send(result);
+};
 
-}
+module.exports.addOrUpdateUserWithCourse = async (req, res) => {
+  try {
+    const { user, courseId, batchId } = req.body;
+
+    // Check if the user already exists in the database
+    const existingUser = await userCollection.findOne({ email: user.email });
+
+    if (existingUser) {
+      // User exists, update the user's courses
+      const updatedUser = await userCollection.findOneAndUpdate(
+        { email: user.email },
+        {
+          $addToSet: {
+            courses: { courseId, batchId },
+            // Add more fields to update if needed
+          },
+        },
+        { returnOriginal: false }
+      );
+
+      res.status(200).json({
+        message: "User's courses updated successfully",
+        updatedUser,
+      });
+    } else {
+      // User does not exist, add the user with courses
+      // Generate a custom password
+      const password = passwordUtils.generateCustomPassword(user);
+      user.password = password;
+
+      const firebaseResult = await firebaseUtils.createUserWithEmailAndPassword(
+        user.email,
+        password
+      );
+
+      if (!firebaseResult.success) {
+        console.error(
+          `Failed to create user in Firebase for email: ${user.email}`
+        );
+        return res
+          .status(500)
+          .json({ message: "Failed to create user in Firebase" });
+      }
+
+      const insertedUser = await userCollection.insertOne({
+        ...user,
+        courses: [{ courseId, batchId }],
+      });
+
+      res.status(200).json({
+        message: "User added to MongoDB and Firebase successfully",
+        insertedUser,
+      });
+    }
+  } catch (error) {
+    console.error("Error adding or updating user:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
