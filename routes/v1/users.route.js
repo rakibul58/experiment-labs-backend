@@ -35,14 +35,15 @@ router
 router
   .route("/updateUser/email/:userEmail")
   .put(userControllers.updateUserData);
-  
-  router
+
+router
   .route("/getAllPaidInfo/organizationId/:organizationId")
   .get(userControllers.getAllPaidInfo);
 
+router.route("/interactions").post(userControllers.addAnInteraction);
 
 router
-  .route("/interactions")
-  .post(userControllers.addAnInteraction);
+  .route("/addOrUpdateUserWithCourse")
+  .post(userControllers.addOrUpdateUserWithCourse);
 
 module.exports = router;
