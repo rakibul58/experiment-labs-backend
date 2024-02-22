@@ -4,23 +4,23 @@ const courseControllers = require("../../controllers/courses.controller");
 const router = express.Router();
 
 router
-    .route("/")
-    .get(courseControllers.getAllCourses)
-    .post(courseControllers.addACourse);
+  .route("/")
+  .get(courseControllers.getAllCourses)
+  .post(courseControllers.addACourse);
 
 router
-    .route("/:id")
-    .get(courseControllers.getACourseById)
-    .put(courseControllers.updateACourseData);
+  .route("/:id")
+  .get(courseControllers.getACourseById)
+  .put(courseControllers.updateACourseData);
 
 router
-    .route("/organizationId/:organizationId")
-    .get(courseControllers.getCoursesByOrganizationId);
-
+  .route("/organizationId/:organizationId")
+  .get(courseControllers.getCoursesByOrganizationId);
 
 router
-    .route("/userId/:userId")
-    .get(courseControllers.getCoursesByUserId);
+  .route("/courseAndBatch/organizationId/:organizationId")
+  .get(courseControllers.getCoursesWithBatchesByOrganizationId);
 
+router.route("/userId/:userId").get(courseControllers.getCoursesByUserId);
 
 module.exports = router;
