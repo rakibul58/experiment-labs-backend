@@ -82,6 +82,75 @@ module.exports.getCoursesByOrganizationId = async (req, res, next) => {
   res.send(course);
 };
 
+// module.exports.getCoursesWithBatchesByOrganizationId = async (
+//   req,
+//   res,
+//   next
+// ) => {
+//   try {
+//     const organizationId = req.params.organizationId;
+
+//     // Find courses for the organization
+//     const courses = await courseCollection
+//       .find({ "organization.organizationId": organizationId })
+//       .toArray();
+
+//     // Fetch batches for each course
+//     const coursesWithBatches = await Promise.all(
+//       courses.map(async (course) => {
+//         const batches = await batchCollection
+//           .find({ courseId: course._id })
+//           .toArray();
+//         return { ...course, batches };
+//       })
+//     );
+
+//     res.status(200).json(coursesWithBatches);
+//   } catch (error) {
+//     console.error("Error retrieving courses with batches:", error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
+
+module.exports.getCoursesWithBatchesByOrganizationId = async (
+  req,
+  res,
+  next
+) => {
+  const organizationId = req.params.organizationId;
+
+  try {
+    // Find all courses for the organization
+    const courses = await courseCollection
+      .find({ "organization.organizationId": organizationId })
+      .toArray();
+
+    // Iterate through each course and embed batches data
+    const coursesWithBatches = await Promise.all(
+      courses.map(async (course) => {
+        const courseIdString = course._id.toString();
+        // Find batches for the current course
+        const batches = await batchCollection
+          .find({ courseId: courseIdString })
+          .toArray();
+
+        // Embed batches data into the course document
+        const courseWithBatches = {
+          ...course,
+          batches: batches,
+        };
+
+        return courseWithBatches;
+      })
+    );
+
+    res.status(200).json(coursesWithBatches);
+  } catch (error) {
+    console.error("Error retrieving courses with batches:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports.updateACourseData = async (req, res, next) => {
   const courseId = req.params.id;
   const updatedCourse = req.body;
