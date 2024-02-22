@@ -40,6 +40,10 @@ router
   .route("/getAllPaidInfo/organizationId/:organizationId")
   .get(userControllers.getAllPaidInfo);
 
+router
+  .route("/getAllPaidInfoWithPayerData/organizationId/:organizationId")
+  .get(userControllers.getAllPaidInfoWithPayerData);
+
 router.route("/interactions").post(userControllers.addAnInteraction);
 
 router

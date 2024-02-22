@@ -587,3 +587,37 @@ module.exports.addOrUpdateUserWithCourse = async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 };
+
+module.exports.getAllPaidInfoWithPayerData = async (req, res) => {
+  const organizationId = req.params.organizationId;
+
+  try {
+    // Find all receipts for the organization
+    const receipts = await receiptCollection
+      .find({ organizationId: organizationId })
+      .toArray();
+
+    // Fetch payer data for each receipt
+    const receiptsWithPayerData = await Promise.all(
+      receipts.map(async (receipt) => {
+        // Find the payer using the UserEmail field
+        const payer = await userCollection.findOne({
+          email: receipt.UserEmail,
+        });
+
+        // Create a new object combining receipt data with payer data
+        const receiptWithPayerData = {
+          ...receipt,
+          payer: payer || {}, // If payer is not found, default to an empty object
+        };
+
+        return receiptWithPayerData;
+      })
+    );
+
+    res.status(200).json(receiptsWithPayerData);
+  } catch (error) {
+    console.error("Error retrieving receipt data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
