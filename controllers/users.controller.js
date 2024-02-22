@@ -197,6 +197,114 @@ module.exports.verifyPayment = async (req, res, next) => {
   }
 };
 
+module.exports.verifyBundlePayment = async (req, res, next) => {
+  // Destructure the required fields from the request body, including the courses array
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    razorpay_key_secret,
+    courses, // Array of objects, each containing courseId and batchId
+    coupon,
+    couponId,
+    discountAmount,
+    email,
+    organizationId,
+    organizationName,
+    originalPrice,
+    paidAmount,
+    userId,
+  } = req.body;
+
+  const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+
+  const expectedSignature = crypto
+    .createHmac("sha256", razorpay_key_secret)
+    .update(body)
+    .digest("hex");
+
+  const isAuthentic = expectedSignature === razorpay_signature;
+
+  if (isAuthentic) {
+    // Process each course in the array
+    const newReceipts = courses.map((course) => ({
+      batchId: course.batchId,
+      courseId: course.courseId,
+      coupon,
+      couponId,
+      discountAmount,
+      UserEmail: email,
+      organizationId,
+      organizationName,
+      originalPrice,
+      paidAmount,
+      userId,
+      razorpay_payment_id,
+      razorpay_order_id,
+      paidAt: new Date(),
+    }));
+
+    const result = await receiptCollection.insertMany(newReceipts);
+    const receiptIds = result.insertedIds;
+
+    // Process each course for user's enrollment
+    await Promise.all(courses.map(async (course, index) => {
+      const updateResult = await userCollection.updateOne(
+        { email: email, "courses.courseId": course.courseId },
+        {
+          $set: {
+            "courses.$.batchId": course.batchId,
+            "courses.$.enrollDate": new Date(),
+            "courses.$.paidAmount": paidAmount,
+            "courses.$.receiptId": receiptIds[index],
+          },
+        }
+      );
+
+      if (updateResult.modifiedCount === 0) {
+        // If the specific courseId does not exist for the user, push a new course object
+        await userCollection.updateOne(
+          { email: email },
+          {
+            $push: {
+              courses: {
+                courseId: course.courseId,
+                batchId: course.batchId,
+                enrollDate: new Date(),
+                paidAmount,
+                receiptId: receiptIds[index],
+              },
+            },
+          }
+        );
+      }
+    }));
+
+    const userData = await userCollection.findOne({ email: email });
+
+    let couponResult = {};
+    if (couponId) {
+      couponResult = await offerCollection.updateOne(
+        { _id: new ObjectId(couponId) },
+        { $inc: { usedCount: 1 } },
+        { upsert: true }
+      );
+    }
+
+    res.send({
+      success: true,
+      receipts: result,
+      userData,
+      couponResult,
+    });
+  } else {
+    res.json({
+      success: false,
+    });
+  }
+};
+
+
 module.exports.getAllPaidInfo = async (req, res) => {
   const organizationId = req.params.organizationId;
   console.log(organizationId); // For debugging, you can remove this line in production
