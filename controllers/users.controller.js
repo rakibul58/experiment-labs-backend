@@ -108,10 +108,14 @@ module.exports.verifyPayment = async (req, res, next) => {
 
   if (isAuthentic) {
     const newReceipt = {
-      batchId,
+      courses: [
+        {
+          courseId,
+          batchId
+        }
+      ],
       coupon,
       couponId,
-      courseId,
       discountAmount,
       UserEmail: email,
       organizationId,
@@ -227,9 +231,8 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
 
   if (isAuthentic) {
     // Process each course in the array
-    const newReceipts = courses.map((course) => ({
-      batchId: course.batchId,
-      courseId: course.courseId,
+    const newReceipts = {
+      courses,
       coupon,
       couponId,
       discountAmount,
@@ -242,10 +245,10 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
       razorpay_payment_id,
       razorpay_order_id,
       paidAt: new Date(),
-    }));
+    };
 
-    const result = await receiptCollection.insertMany(newReceipts);
-    const receiptIds = result.insertedIds;
+    const result = await receiptCollection.insertOne(newReceipts);
+    const receiptId = result.insertedId;
 
     // Process each course for user's enrollment
     await Promise.all(courses.map(async (course, index) => {
@@ -256,7 +259,7 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
             "courses.$.batchId": course.batchId,
             "courses.$.enrollDate": new Date(),
             "courses.$.paidAmount": paidAmount,
-            "courses.$.receiptId": receiptIds[index],
+            "courses.$.receiptId": receiptId,
           },
         }
       );
@@ -272,7 +275,7 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
                 batchId: course.batchId,
                 enrollDate: new Date(),
                 paidAmount,
-                receiptId: receiptIds[index],
+                receiptId: receiptId,
               },
             },
           }
@@ -302,6 +305,93 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
       success: false,
     });
   }
+};
+
+
+module.exports.enrollAStudent = async (req, res, next) => {
+  // Destructure the required fields from the request body, including the courses array
+  const {
+    courses, // Array of objects, each containing courseId and batchId
+    coupon,
+    couponId,
+    discountAmount,
+    email,
+    organizationId,
+    organizationName,
+    originalPrice,
+    paidAmount,
+    userId,
+  } = req.body;
+
+
+  // Process each course in the array
+  const newReceipts = {
+    courses,
+    coupon,
+    couponId,
+    discountAmount,
+    UserEmail: email,
+    organizationId,
+    organizationName,
+    originalPrice,
+    paidAmount,
+    userId,
+    paidAt: new Date(),
+  };
+
+  const result = await receiptCollection.insertOne(newReceipts);
+  const receiptId = result.insertedId;
+
+  // Process each course for user's enrollment
+  await Promise.all(courses.map(async (course, index) => {
+    const updateResult = await userCollection.updateOne(
+      { email: email, "courses.courseId": course.courseId },
+      {
+        $set: {
+          "courses.$.batchId": course.batchId,
+          "courses.$.enrollDate": new Date(),
+          "courses.$.paidAmount": paidAmount,
+          "courses.$.receiptId": receiptId,
+        },
+      }
+    );
+
+    if (updateResult.modifiedCount === 0) {
+      // If the specific courseId does not exist for the user, push a new course object
+      await userCollection.updateOne(
+        { email: email },
+        {
+          $push: {
+            courses: {
+              courseId: course.courseId,
+              batchId: course.batchId,
+              enrollDate: new Date(),
+              paidAmount,
+              receiptId: receiptId,
+            },
+          },
+        }
+      );
+    }
+  }));
+
+  const userData = await userCollection.findOne({ email: email });
+
+  let couponResult = {};
+  if (couponId) {
+    couponResult = await offerCollection.updateOne(
+      { _id: new ObjectId(couponId) },
+      { $inc: { usedCount: 1 } },
+      { upsert: true }
+    );
+  }
+
+  res.send({
+    success: true,
+    receipts: result,
+    userData,
+    couponResult,
+  });
 };
 
 

@@ -18,6 +18,8 @@ router.route("/unpaidUsers/verifyPayment").post(userControllers.verifyPayment);
 
 router.route("/unpaidUsers/verifyBundlePayment").post(userControllers.verifyBundlePayment);
 
+router.route("/unpaidUsers/enroll").post(userControllers.enrollAStudent);
+
 router.route("/addStudent").post(userControllers.addStudent);
 
 router.route("/addBulkStudent").post(userControllers.addBulkStudent);
