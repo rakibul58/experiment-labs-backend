@@ -44,6 +44,7 @@ const certificateTemplatesRoutes = require("./routes/v1/certificateTemplates.rou
 const { startCronJob } = require("./utils/cronJob");
 const statRoutes = require("./routes/v1/stats.route");
 const courseCategoryRoutes = require("./routes/v1/courseCategory.route");
+const languageSettingRouter = require("./routes/v1/languageSetting.route");
 const offerRoutes = require("./routes/v1/offer.route");
 const notificationsRoutes = require("./routes/v1/notifications.route");
 const bundleRoutes = require("./routes/v1/bundles.route");
@@ -86,6 +87,7 @@ app.use("/api/v1/givenFeedbacks", givenFeedbackRoutes);
 app.use("/api/v1/certificateTemplates", certificateTemplatesRoutes);
 app.use("/api/v1/stats", statRoutes);
 app.use("/api/v1/CourseCategory", courseCategoryRoutes);
+app.use("/api/v1/language", languageSettingRouter);
 app.use("/api/v1/offers", offerRoutes);
 app.use("/api/v1/notifications", notificationsRoutes);
 app.use("/api/v1/bundles", bundleRoutes);
