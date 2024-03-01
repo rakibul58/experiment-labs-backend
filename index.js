@@ -8,9 +8,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("front"));
 app.use(express.urlencoded({ extended: true }));
-const { setupSocket } = require("./socketSetup");
+// const { setupSocket } = require("./socketSetup");
 
-const server = http.createServer(app);
+// const server = http.createServer(app);
 // const io = socketIo(server);
 // const io = require("socket.io")(server, {
 //   cors: {
@@ -101,45 +101,13 @@ app.all("*", (req, res) => {
   res.send("No route found.");
 });
 
-// app.listen(port, () => {
-//   console.log(`Example app listening on port ${port}`);
-// });
-
-// const io = require("socket.io")(server, {
-//   // pingTimeout: 60000,
-//   cors: {
-//     origin: `http://localhost:3000`,
-//   },
-// });
-
-// const io = require("socket.io")(server, {
-//   cors: {
-//     origin: "http://localhost:3000", // replace with your frontend URL
-//   },
-// });
-
-// io.on("connection", (socket) => {
-//   console.log("A user connected");
-
-//   socket.on("testing", (notification) => {
-//     console.log("Testing notification: " + notification);
-//   });
-
-//   socket.on("disconnect", () => {
-//     console.log("User disconnected");
-//   });
-// });
-
-setupSocket(server);
-
-// module.exports = { app, server, io };
-
-server.listen(port, () => {
+app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-// process.on("unhandledRejection", (error) => {
-//   console.log(error.name, error.message);
-/*  app.close(() => {
+
+process.on("unhandledRejection", (error) => {
+  console.log(error.name, error.message);
+  app.close(() => {
     process.exit(1);
-  }); */
-// });
+  });
+});

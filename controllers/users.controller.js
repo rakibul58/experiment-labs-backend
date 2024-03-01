@@ -560,6 +560,64 @@ module.exports.getStudentsByOrganization = async (req, res) => {
   }
 };
 
+// module.exports.addDeviceToUser = async (req, res) => {
+//   try {
+//     const { userEmail } = req.params;
+//     const { device } = req.body;
+
+//     // Find the user with the specified userEmail
+//     const user = await userCollection.findOne({ email: userEmail });
+
+//     // Check if the user exists
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     // Fetch organization data using the organizationId from the user
+//     const organization = await organizationCollection.findOne({
+//       _id: new ObjectId(user.organizationId),
+//     });
+
+//     // Check if the organization exists
+//     if (!organization) {
+//       return res.status(404).json({ message: "Organization not found" });
+//     }
+
+//     // Check the number of devices in the user's array
+//     if (!user.devices) {
+//       user.devices = [];
+//     }
+
+//     // Check if the user already has reached the maximum allowed devices
+//     if (user.devices.length >= organization.maxDeviceCount) {
+//       return res
+//         .status(400)
+//         .json({ message: "User has reached the maximum allowed devices" });
+//     }
+
+//     // Add the new device to the user's array
+//     user.devices.push(device);
+
+//     // Update the user in the collection
+//     const updateResult = await userCollection.updateOne(
+//       { email: userEmail },
+//       { $set: { devices: user.devices } }
+//     );
+
+//     // Check if the update was successful
+//     if (updateResult.modifiedCount > 0) {
+//       return res
+//         .status(200)
+//         .json({ message: "Device added successfully", user });
+//     } else {
+//       return res.status(500).json({ message: "Failed to update user" });
+//     }
+//   } catch (error) {
+//     console.error("Error adding device to user:", error);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
+
 module.exports.addDeviceToUser = async (req, res) => {
   try {
     const { userEmail } = req.params;
@@ -571,6 +629,13 @@ module.exports.addDeviceToUser = async (req, res) => {
     // Check if the user exists
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the device already exists in the user's devices array
+    if (user.devices && user.devices.includes(device)) {
+      return res
+        .status(400)
+        .json({ message: "Device already exists for the user" });
     }
 
     // Fetch organization data using the organizationId from the user
