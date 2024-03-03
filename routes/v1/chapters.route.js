@@ -3,6 +3,7 @@ const chapterControllers = require("../../controllers/chapters.controller");
 
 const router = express.Router();
 
+
 router
     .route("/")
     .get(chapterControllers.getAllChapters)
@@ -23,6 +24,9 @@ router
 router
     .route("/courseId/:courseId")
     .get(chapterControllers.getChaptersByCourseId);
+router
+    .route("/chapters/:chapterId")
+    .put(chapterControllers.updateChapterById);
 
 
 module.exports = router;
