@@ -3,30 +3,24 @@ const chapterControllers = require("../../controllers/chapters.controller");
 
 const router = express.Router();
 
+router
+  .route("/")
+  .get(chapterControllers.getAllChapters)
+  .post(chapterControllers.addAChapter);
 
 router
-    .route("/")
-    .get(chapterControllers.getAllChapters)
-    .post(chapterControllers.addAChapter);
+  .route("/:id")
+  .get(chapterControllers.getAChapterById)
+  .put(chapterControllers.renameAChapter);
 
-
-router
-    .route("/:id")
-    .get(chapterControllers.getAChapterById)
-    .put(chapterControllers.renameAChapter);
-
+router.route("/weekId/:weekId").get(chapterControllers.getChaptersByWeekId);
 
 router
-    .route("/weekId/:weekId")
-    .get(chapterControllers.getChaptersByWeekId);
-
+  .route("/courseId/:courseId")
+  .get(chapterControllers.getChaptersByCourseId);
 
 router
-    .route("/courseId/:courseId")
-    .get(chapterControllers.getChaptersByCourseId);
-router
-    .route("/chapters/:chapterId")
-    .put(chapterControllers.updateChapterById);
-
+  .route("/chapterId/:chapterId")
+  .delete(chapterControllers.deleteChapterWithTasks);
 
 module.exports = router;
