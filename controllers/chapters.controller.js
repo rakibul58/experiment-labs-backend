@@ -54,6 +54,7 @@ module.exports.getChaptersByCourseId = async (req, res, next) => {
     res.send(result);
 };
 
+// drag and drop
 module.exports.updateChapterById = async (req, res, next) => {
     const _id = req.params.chapterId;
     const newData = req.body; // Assuming the new data is sent in the request body
