@@ -151,22 +151,23 @@ async function deleteTask(taskId, taskType) {
 }
 
 module.exports.updateChapterById = async (req, res) => {
-    const _id = req.params.chapterId;
-    const newData = req.body; // Assuming the new data is sent in the request body
-    
-    try {
-        const updatedChapter = await chapterCollection.updateOne(
-            { _id: ObjectId(_id) }, // Match by _id
-            { $set: newData } // Set the new data
-        );
+  const _id = req.params.chapterId;
+  const newData = req.body; // Assuming the new data is sent in the request body
 
-        if (updatedChapter.modifiedCount === 1) {
-            res.send({ message: "Chapter updated successfully" });
-        } else {
-            res.status(404).send({ error: "Chapter not found" });
-        }
-    } catch (err) {
-        console.error("Error updating chapter:", err);
-        res.status(500).send({ error: "Internal server error" });
+  try {
+    const updatedChapter = await chapterCollection.updateOne(
+      { _id: ObjectId(_id) }, // Match by _id
+      { $set: newData } // Set the new data
+    );
+
+    if (updatedChapter.modifiedCount === 1) {
+      res.send({ message: "Chapter updated successfully" });
     }
+    // else {
+    //   res.status(404).send({ error: "Chapter not found" });
+    // }
+  } catch (err) {
+    console.error("Error updating chapter:", err);
+    res.status(500).send({ error: "Internal server error" });
+  }
 };
