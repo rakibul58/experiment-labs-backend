@@ -13,4 +13,8 @@ router
   .route("/updateBatch/batchId/:batchId")
   .put(batchControllers.updateABatchData);
 
+router
+  .route("/deleteBatch/batchId/:batchId")
+  .delete(batchControllers.deleteBatch);
+
 module.exports = router;
