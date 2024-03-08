@@ -4,6 +4,17 @@ const batchCollection = client.db("experiment-labs").collection("batches");
 const chapterCollection = client.db("experiment-labs").collection("chapters");
 const weekCollection = client.db("experiment-labs").collection("weeks");
 const userCollection = client.db("experiment-labs").collection("users");
+const assignmentCollection = client
+  .db("experiment-labs")
+  .collection("assignments");
+const classCollection = client.db("experiment-labs").collection("classes");
+const readingCollection = client.db("experiment-labs").collection("readings");
+const quizCollection = client.db("experiment-labs").collection("quizes");
+const liveTestCollection = client.db("experiment-labs").collection("liveTests");
+const videoCollection = client.db("experiment-labs").collection("videos");
+const audioCollection = client.db("experiment-labs").collection("audios");
+const fileCollection = client.db("experiment-labs").collection("files");
+const scheduleCollection = client.db("experiment-labs").collection("schedule");
 
 module.exports.getBatchesByCourseId = async (req, res, next) => {
   const courseId = req.params.courseId;
@@ -194,8 +205,6 @@ module.exports.createABatch = async (req, res, next) => {
   }
 }; */
 
-
-
 module.exports.updateABatchData = async (req, res, next) => {
   try {
     const batchId = req.params.batchId;
@@ -208,7 +217,11 @@ module.exports.updateABatchData = async (req, res, next) => {
 
     const updateBatchName = await chapterCollection.updateMany(
       { "tasks.batches.batchId": batchId },
-      { $set: { "tasks.$[].batches.$[batchIndex].batchName": updatedBatch.batchName } },
+      {
+        $set: {
+          "tasks.$[].batches.$[batchIndex].batchName": updatedBatch.batchName,
+        },
+      },
       { arrayFilters: [{ "batchIndex.batchId": batchId }] }
     );
 
@@ -229,4 +242,55 @@ module.exports.updateABatchData = async (req, res, next) => {
   }
 };
 
+// API endpoint for deleting a batch
+module.exports.deleteBatch = async (req, res) => {
+  try {
+    const batchId = req.params.batchId;
 
+    // Find and delete the batch
+    const deleteResult = await batchCollection.deleteOne({
+      _id: new ObjectId(batchId),
+    });
+    if (deleteResult.deletedCount === 0) {
+      return res.status(404).json({ message: "Batch not found" });
+    }
+
+    // Update tasks associated with the deleted batch
+    await updateTasksAndChaptersForDeletedBatch(batchId);
+
+    res.status(200).json({ message: "Batch deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting batch:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Function to update tasks and chapters associated with the deleted batch
+async function updateTasksAndChaptersForDeletedBatch(batchId) {
+  // Update tasks in each task collection
+  const taskCollections = [
+    assignmentCollection,
+    classCollection,
+    readingCollection,
+    quizCollection,
+    liveTestCollection,
+    videoCollection,
+    audioCollection,
+    fileCollection,
+    scheduleCollection,
+  ];
+
+  for (const collection of taskCollections) {
+    await collection.updateMany(
+      { "batches.batchId": batchId },
+      { $pull: { batches: { batchId } } }
+    );
+  }
+
+  // Update chapters
+  await chapterCollection.updateMany(
+    { "tasks.batches.batchId": batchId },
+    { $pull: { "tasks.$[elem].batches": { batchId } } },
+    { arrayFilters: [{ "elem.batches.batchId": batchId }] }
+  );
+}
