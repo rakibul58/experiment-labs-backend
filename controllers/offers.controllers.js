@@ -87,3 +87,19 @@ module.exports.getOffersByBatchId = async (req, res, next) => {
         res.send(error);
     }
 };
+
+
+module.exports.getOffersByBundleId = async (req, res, next) => {
+    try {
+        const bundleId = req.params.bundleId;
+        const result = await offerCollection.find({ bundleIds: { $in: [bundleId] } }).toArray();
+
+        res.send({
+            success: true,
+            result
+        });
+
+    } catch (error) {
+        res.send(error);
+    }
+};

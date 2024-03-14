@@ -198,6 +198,9 @@ module.exports.createABatch = async (req, res, next) => {
       { _id: new ObjectId(batchId) },
       { $set: updatedBatch }
     );
+
+    
+
     res.send(result);
   } catch (error) {
     console.error(error);
