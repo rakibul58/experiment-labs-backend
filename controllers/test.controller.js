@@ -1,6 +1,6 @@
 const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
-const testCollection = client.db('experiment-labs').collection('test');
+const testCollection = client.db('experiment-labs').collection('emailTemplate');
 
 module.exports.getAllTest = async (req, res, next) => {
 
