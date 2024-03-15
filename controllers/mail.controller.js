@@ -117,7 +117,7 @@ const createUpdateTemplateCommand = (
 };
 
 
-const createReminderEmailCommand = (toAddress, fromAddress, templateName, learner_name, course_name, site_name, site_email) => {
+const createReminderEmailCommand = (toAddress, fromAddress, templateName, learner_name, course_name, site_name, site_email,task_name,start_time,end_time,meeting_link,user_name) => {
     return new SendTemplatedEmailCommand({
         /**
          * Here's an example of how a template would be replaced with user data:
@@ -125,7 +125,7 @@ const createReminderEmailCommand = (toAddress, fromAddress, templateName, learne
          * Destination: <h1>Hello Bilbo,</h1><p>Don't forget about the party gifts!</p>
          */
         Destination: { ToAddresses: [toAddress] },
-        TemplateData: JSON.stringify({ learner_name: learner_name, course_name: course_name, site_name: site_name, site_email: site_email }),
+        TemplateData: JSON.stringify({ learner_name: learner_name, course_name: course_name, site_name: site_name, site_email: site_email,task_name:task_name,start_time:start_time,end_time:end_time,meeting_link:meeting_link,user_name : user_name}),
         Source: fromAddress,
         Template: templateName,
     });
@@ -173,6 +173,11 @@ module.exports.sendAnEmail = async (req, res) => {
                 req.body.course_name,
                 req.body.site_name,
                 req.body.site_email,
+                req.body.task_name,
+                req.body.start_time,
+                req.body.end_time,
+                req.body.meeting_link,
+                req.body.user_name,
             );
             const data = await sesClient.send(sendReminderEmailCommand);
             res.send({
