@@ -27,3 +27,15 @@ module.exports.deleteATest = async (req, res, next) => {
     const result = await testCollection.deleteOne({ _id: new ObjectId(id) });
     res.send(result);
 };
+
+
+module.exports.updateTest = async (req, res, next) => {
+
+    const { id } = req.params;
+    const updatedTask = req.body;
+    const result = await testCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedTask }
+    );
+    res.send(result);
+};

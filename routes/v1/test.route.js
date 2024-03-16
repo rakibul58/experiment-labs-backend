@@ -10,7 +10,8 @@ router
 
 router
     .route("/:id")
-    .delete(testControllers.deleteATest);
+    .delete(testControllers.deleteATest)
+    .put(testControllers.updateTest);
 
 
 module.exports = router;
