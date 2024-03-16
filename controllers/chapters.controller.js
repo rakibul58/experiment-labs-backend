@@ -59,6 +59,45 @@ module.exports.getChaptersByCourseId = async (req, res, next) => {
   res.send(result);
 };
 
+module.exports.deleteTasksInChapter = async (req, res) => {
+  try {
+    const chapterId = req.params.chapterId;
+
+    // Find the chapter by its ID
+    const chapter = await chapterCollection.findOne({
+      _id: new ObjectId(chapterId),
+    });
+
+    if (!chapter) {
+      return res.status(404).json({ message: "Chapter not found" });
+    }
+
+    // Check if chapter has tasks
+    if (!Array.isArray(chapter.tasks) || chapter.tasks.length === 0) {
+      console.log("No tasks found for the chapter");
+      return res
+        .status(200)
+        .json({ message: "No tasks found for the chapter" });
+    }
+
+    // Iterate through each task in the chapter and delete them
+    for (const task of chapter.tasks) {
+      await deleteTask(task.taskId, task.taskType);
+    }
+
+    // Clear the tasks array in the chapter
+    await chapterCollection.updateOne(
+      { _id: new ObjectId(chapterId) },
+      { $set: { tasks: [] } }
+    );
+
+    res.status(200).json({ message: "Tasks in chapter deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting tasks in chapter:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports.deleteChapterWithTasks = async (req, res) => {
   try {
     const chapterId = req.params.chapterId;

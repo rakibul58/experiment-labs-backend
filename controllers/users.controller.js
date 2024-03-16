@@ -111,8 +111,8 @@ module.exports.verifyPayment = async (req, res, next) => {
       courses: [
         {
           courseId,
-          batchId
-        }
+          batchId,
+        },
       ],
       coupon,
       couponId,
@@ -251,7 +251,100 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
     const receiptId = result.insertedId;
 
     // Process each course for user's enrollment
-    await Promise.all(courses.map(async (course, index) => {
+    await Promise.all(
+      courses.map(async (course, index) => {
+        const updateResult = await userCollection.updateOne(
+          { email: email, "courses.courseId": course.courseId },
+          {
+            $set: {
+              "courses.$.batchId": course.batchId,
+              "courses.$.enrollDate": new Date(),
+              "courses.$.paidAmount": paidAmount,
+              "courses.$.receiptId": receiptId,
+            },
+          }
+        );
+
+        if (updateResult.modifiedCount === 0) {
+          // If the specific courseId does not exist for the user, push a new course object
+          await userCollection.updateOne(
+            { email: email },
+            {
+              $push: {
+                courses: {
+                  courseId: course.courseId,
+                  batchId: course.batchId,
+                  enrollDate: new Date(),
+                  paidAmount,
+                  receiptId: receiptId,
+                },
+              },
+            }
+          );
+        }
+      })
+    );
+
+    const userData = await userCollection.findOne({ email: email });
+
+    let couponResult = {};
+    if (couponId) {
+      couponResult = await offerCollection.updateOne(
+        { _id: new ObjectId(couponId) },
+        { $inc: { usedCount: 1 } },
+        { upsert: true }
+      );
+    }
+
+    res.send({
+      success: true,
+      receipts: result,
+      userData,
+      couponResult,
+    });
+  } else {
+    res.json({
+      success: false,
+    });
+  }
+};
+
+module.exports.enrollAStudent = async (req, res, next) => {
+  // Destructure the required fields from the request body, including the courses array
+  const {
+    courses, // Array of objects, each containing courseId and batchId
+    coupon,
+    couponId,
+    discountAmount,
+    email,
+    organizationId,
+    organizationName,
+    originalPrice,
+    paidAmount,
+    userId,
+  } = req.body;
+
+  // Process each course in the array
+  const newReceipts = {
+    courses,
+    coupon,
+    couponId,
+    discountAmount,
+    UserEmail: email,
+    organizationId,
+    organizationName,
+    originalPrice,
+    paidAmount,
+    userId,
+    paidAt: new Date(),
+  };
+
+  const result = await receiptCollection.insertOne(newReceipts);
+  const receiptId = result.insertedId;
+
+  // Process each course for user's enrollment
+  await Promise.all(
+    courses.map(async (course, index) => {
       const updateResult = await userCollection.updateOne(
         { email: email, "courses.courseId": course.courseId },
         {
@@ -281,99 +374,8 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
           }
         );
       }
-    }));
-
-    const userData = await userCollection.findOne({ email: email });
-
-    let couponResult = {};
-    if (couponId) {
-      couponResult = await offerCollection.updateOne(
-        { _id: new ObjectId(couponId) },
-        { $inc: { usedCount: 1 } },
-        { upsert: true }
-      );
-    }
-
-    res.send({
-      success: true,
-      receipts: result,
-      userData,
-      couponResult,
-    });
-  } else {
-    res.json({
-      success: false,
-    });
-  }
-};
-
-
-module.exports.enrollAStudent = async (req, res, next) => {
-  // Destructure the required fields from the request body, including the courses array
-  const {
-    courses, // Array of objects, each containing courseId and batchId
-    coupon,
-    couponId,
-    discountAmount,
-    email,
-    organizationId,
-    organizationName,
-    originalPrice,
-    paidAmount,
-    userId,
-  } = req.body;
-
-
-  // Process each course in the array
-  const newReceipts = {
-    courses,
-    coupon,
-    couponId,
-    discountAmount,
-    UserEmail: email,
-    organizationId,
-    organizationName,
-    originalPrice,
-    paidAmount,
-    userId,
-    paidAt: new Date(),
-  };
-
-  const result = await receiptCollection.insertOne(newReceipts);
-  const receiptId = result.insertedId;
-
-  // Process each course for user's enrollment
-  await Promise.all(courses.map(async (course, index) => {
-    const updateResult = await userCollection.updateOne(
-      { email: email, "courses.courseId": course.courseId },
-      {
-        $set: {
-          "courses.$.batchId": course.batchId,
-          "courses.$.enrollDate": new Date(),
-          "courses.$.paidAmount": paidAmount,
-          "courses.$.receiptId": receiptId,
-        },
-      }
-    );
-
-    if (updateResult.modifiedCount === 0) {
-      // If the specific courseId does not exist for the user, push a new course object
-      await userCollection.updateOne(
-        { email: email },
-        {
-          $push: {
-            courses: {
-              courseId: course.courseId,
-              batchId: course.batchId,
-              enrollDate: new Date(),
-              paidAmount,
-              receiptId: receiptId,
-            },
-          },
-        }
-      );
-    }
-  }));
+    })
+  );
 
   const userData = await userCollection.findOne({ email: email });
 
@@ -393,7 +395,6 @@ module.exports.enrollAStudent = async (req, res, next) => {
     couponResult,
   });
 };
-
 
 module.exports.getAllPaidInfo = async (req, res) => {
   const organizationId = req.params.organizationId;
@@ -491,6 +492,56 @@ module.exports.addBulkStudent = async (req, res) => {
   }
 };
 
+// important add bulk student function it may need in future
+// module.exports.addBulkStudent = async (req, res) => {
+//   const { users, relatedData } = req.body;
+//   const insertedUsersData = []; // Array to store inserted user data
+
+//   try {
+//     // Add users to Firebase using the function
+//     for (const user of users) {
+//       // Merge each item of relatedData into the user object
+//       Object.assign(user, relatedData);
+
+//       // Format the dateCreated field
+//       user.dateCreated = new Date(user.dateCreated);
+
+//       // Generate a custom password
+//       const password = passwordUtils.generateCustomPassword(user);
+//       user.password = password;
+
+//       const result = await firebaseUtils.createUserWithEmailAndPassword(
+//         user.email,
+//         password
+//       );
+
+//       if (!result.success) {
+//         console.error(
+//           `Failed to create user in Firebase for email: ${user.email}`
+//         );
+//         // Handle error case: Maybe remove the user from MongoDB?
+//       } else {
+//         // Insert the user into MongoDB and store the data in the array
+//         const insertedUser = await userCollection.insertOne(user);
+//         insertedUsersData.push(user);
+//       }
+//     }
+
+//     const count = await userCollection.countDocuments();
+
+//     res.status(200).json({
+//       message: "Users added to MongoDB and Firebase successfully",
+//       insertedUsers: insertedUsersData,
+//       count,
+//     });
+//   } catch (error) {
+//     console.error("Error adding users:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Error adding users", error: error.message });
+//   }
+// };
+
 module.exports.updateUsersInCourseBatch = async (req, res) => {
   try {
     const { userEmails, courseId, batchId } = req.body;
@@ -531,6 +582,79 @@ module.exports.updateUsersInCourseBatch = async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 };
+
+// important update users in course batch function it may need in future
+// module.exports.updateUsersInCourseBatch = async (req, res) => {
+//   try {
+//     const { userEnrollments, courseId, batchId } = req.body;
+
+//     // Ensure the provided courseId and batchId are valid ObjectId
+//     const validCourseId = ObjectId.isValid(courseId);
+//     const validBatchId = ObjectId.isValid(batchId);
+
+//     if (!validCourseId || !validBatchId) {
+//       return res.status(400).json({ message: "Invalid courseId or batchId" });
+//     }
+
+//     const bulkUpdateOperations = [];
+
+//     for (const { email, enrollDate } of userEnrollments) {
+//       // Format the enrollment date
+//       const formattedEnrollDate = new Date(enrollDate);
+
+//       // Find the user
+//       let user = await userCollection.findOne({ email });
+
+//       // Initialize courses array if it doesn't exist
+//       if (!user.courses) {
+//         user.courses = [];
+//       }
+
+//       // Check if the courseId already exists
+//       const existingCourseIndex = user.courses.findIndex(
+//         (course) => course.courseId === courseId
+//       );
+
+//       if (existingCourseIndex !== -1) {
+//         // If courseId exists, update the batchId and enrollDate
+//         user.courses[existingCourseIndex].batchId = batchId;
+//         user.courses[existingCourseIndex].enrollDate = formattedEnrollDate;
+//       } else {
+//         // If courseId does not exist, add the course and batch with enrollDate
+//         const newCourseEntry = {
+//           courseId,
+//           batchId,
+//           enrollDate: formattedEnrollDate,
+//         };
+//         user.courses.push(newCourseEntry);
+//       }
+
+//       // Update the user data
+//       const updateOperation = {
+//         updateOne: {
+//           filter: { email },
+//           update: { $set: { courses: user.courses } },
+//         },
+//       };
+//       bulkUpdateOperations.push(updateOperation);
+//     }
+
+//     // Execute bulk update operations
+//     const bulkUpdateResult = await userCollection.bulkWrite(
+//       bulkUpdateOperations
+//     );
+
+//     res.status(200).json({
+//       message: "Users updated successfully",
+//       updatedUsers: bulkUpdateResult,
+//     });
+//   } catch (error) {
+//     console.error("Error updating users:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Internal server error", error: error.message });
+//   }
+// };
 
 module.exports.getStudentsByOrganization = async (req, res) => {
   try {
