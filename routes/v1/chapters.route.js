@@ -23,9 +23,10 @@ router
   .route("/chapterId/:chapterId")
   .delete(chapterControllers.deleteChapterWithTasks);
 
-  router
-    .route("/chapters/:chapterId")
-    .put(chapterControllers.updateChapterById);
+router
+  .route("/deleteTasksInChapter/chapterId/:chapterId")
+  .put(chapterControllers.deleteTasksInChapter);
 
+router.route("/chapters/:chapterId").put(chapterControllers.updateChapterById);
 
 module.exports = router;
