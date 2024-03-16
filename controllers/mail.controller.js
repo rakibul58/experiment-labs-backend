@@ -1,10 +1,11 @@
 const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const nodemailer = require('nodemailer');
-const { SESClient, SendEmailCommand, CreateTemplateCommand, UpdateTemplateCommand, SendTemplatedEmailCommand } = require('@aws-sdk/client-ses');
+const { SESClient, SendEmailCommand, CreateTemplateCommand, UpdateTemplateCommand, SendTemplatedEmailCommand, SendBulkTemplatedEmailCommand } = require('@aws-sdk/client-ses');
 const orgCollection = client.db('experiment-labs').collection('organizations');
 const emailTemplateCollection = client.db('experiment-labs').collection('emailTemplate');
 const crypto = require('crypto');
+const userCollection = client.db("experiment-labs").collection("users");
 
 const secretKey = process.env.SECRET_KEY;
 const algorithm = 'aes-256-cbc';
@@ -117,7 +118,7 @@ const createUpdateTemplateCommand = (
 };
 
 
-const createReminderEmailCommand = (toAddress, fromAddress, templateName, learner_name, course_name, site_name, site_email,task_name,start_time,end_time,meeting_link,user_name) => {
+const createReminderEmailCommand = (toAddress, fromAddress, templateName, learner_name, course_name, site_name, site_email, task_name, start_time, end_time, meeting_link, user_name) => {
     return new SendTemplatedEmailCommand({
         /**
          * Here's an example of how a template would be replaced with user data:
@@ -125,7 +126,28 @@ const createReminderEmailCommand = (toAddress, fromAddress, templateName, learne
          * Destination: <h1>Hello Bilbo,</h1><p>Don't forget about the party gifts!</p>
          */
         Destination: { ToAddresses: [toAddress] },
-        TemplateData: JSON.stringify({ learner_name: learner_name, course_name: course_name, site_name: site_name, site_email: site_email,task_name:task_name,start_time:start_time,end_time:end_time,meeting_link:meeting_link,user_name : user_name}),
+        TemplateData: JSON.stringify({ learner_name: learner_name, course_name: course_name, site_name: site_name, site_email: site_email, task_name: task_name, start_time: start_time, end_time: end_time, meeting_link: meeting_link, user_name: user_name }),
+        Source: fromAddress,
+        Template: templateName,
+    });
+};
+
+const createBulkReminderEmailCommand = (users, fromAddress, templateName) => {
+    return new SendBulkTemplatedEmailCommand({
+        /**
+         * Each 'Destination' uses a corresponding set of replacement data. We can map each user
+         * to a 'Destination' and provide user specific replacement data to create personalized emails.
+         *
+         * Here's an example of how a template would be replaced with user data:
+         * Template: <h1>Hello {{name}},</h1><p>Don't forget about the party gifts!</p>
+         * Destination 1: <h1>Hello Bilbo,</h1><p>Don't forget about the party gifts!</p>
+         * Destination 2: <h1>Hello Frodo,</h1><p>Don't forget about the party gifts!</p>
+         */
+        Destinations: users.map((user) => ({
+            Destination: { ToAddresses: [user.email] },
+            ReplacementTemplateData: JSON.stringify({ learner_name: user.name }),
+        })),
+        DefaultTemplateData: JSON.stringify({ learner_name: "Shireling" }),
         Source: fromAddress,
         Template: templateName,
     });
@@ -165,6 +187,23 @@ module.exports.sendAnEmail = async (req, res) => {
             else
                 templateName = req.body.templateName;
 
+            // if (req.body.isBulk === true) {
+            //     const courseId = req.body.courseId;
+            //     const users = await userCollection.find({"courses.courseId": courseId}).toArray();
+            //     const sendBulkTemplateEmailCommand = createBulkReminderEmailCommand(
+            //         users,
+            //         email,
+            //         templateName,
+            //       );
+
+            //     const data = await sesClient.send(sendBulkTemplateEmailCommand);
+            //     return res.send({
+            //         success: true,
+            //         data,
+            //         message: "Email Sent Successfully"
+            //     });
+            // }
+
             const sendReminderEmailCommand = createReminderEmailCommand(
                 to,
                 email,
@@ -189,7 +228,7 @@ module.exports.sendAnEmail = async (req, res) => {
         }
         else {
             const mailOptions = {
-                from: from,
+                from: "naman.j@experimentlabs.in",
                 to: to,
                 subject: subject,
                 text: message
