@@ -421,6 +421,11 @@ module.exports.updateATask = async (req, res, next) => {
         { _id: new ObjectId(taskId) },
         { $set: updatedTask }
       );
+    case "schedule":
+      updateResult = await scheduleCollection.updateOne(
+        { _id: new ObjectId(taskId) },
+        { $set: updatedTask }
+      );
       break;
     default:
       return res.status(400).json({ error: "Invalid task type" });

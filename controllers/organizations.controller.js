@@ -150,7 +150,7 @@ module.exports.getEncryptedData = async (req, res, next) => {
     //         templateName
     //     }
     // );
-    const emailTemplates = await emailTemplateCollection.find({organizationId: orgId, email: email, templateType: "default"}).toArray();
+    const emailTemplates = await emailTemplateCollection.find({ organizationId: orgId, email: email }).toArray();
 
     res.send({
         sendFrom,
