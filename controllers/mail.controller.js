@@ -118,7 +118,7 @@ const createUpdateTemplateCommand = (
 };
 
 
-const createReminderEmailCommand = (toAddress, fromAddress, templateName, learner_name, course_name, site_name, site_email, task_name, start_time, end_time, meeting_link, user_name) => {
+const createReminderEmailCommand = (toAddress, fromAddress, templateName, learner_name, course_name, site_name, site_email, task_name, start_time, end_time, meeting_link, user_name, site_url) => {
     return new SendTemplatedEmailCommand({
         /**
          * Here's an example of how a template would be replaced with user data:
@@ -126,7 +126,7 @@ const createReminderEmailCommand = (toAddress, fromAddress, templateName, learne
          * Destination: <h1>Hello Bilbo,</h1><p>Don't forget about the party gifts!</p>
          */
         Destination: { ToAddresses: [toAddress] },
-        TemplateData: JSON.stringify({ learner_name: learner_name, course_name: course_name, site_name: site_name, site_email: site_email, task_name: task_name, start_time: start_time, end_time: end_time, meeting_link: meeting_link, user_name: user_name }),
+        TemplateData: JSON.stringify({ learner_name: learner_name, course_name: course_name, site_name: site_name, site_email: site_email, task_name: task_name, start_time: start_time, end_time: end_time, meeting_link: meeting_link, user_name: user_name, site_url: site_url }),
         Source: fromAddress,
         Template: templateName,
     });
@@ -170,6 +170,7 @@ module.exports.sendAnEmail = async (req, res) => {
         const decryptedSecretAccessKey = decrypt(secretAccessKey);
         const decryptedRegion = decrypt(region);
         const { to, templateType } = req.body;
+        // console.log("Api clicked ==============>",{ to, templateType });
         if (sendFrom === "ses") {
             const SES_CONFIG = {
                 credentials: {
@@ -186,6 +187,8 @@ module.exports.sendAnEmail = async (req, res) => {
                 templateName = result?.emailIntegration?.templateName;
             else
                 templateName = req.body.templateName;
+
+            console.log(templateName);
 
             // if (req.body.isBulk === true) {
             //     const courseId = req.body.courseId;
@@ -208,15 +211,16 @@ module.exports.sendAnEmail = async (req, res) => {
                 to,
                 email,
                 templateName,
-                req.body.learner_name,
-                req.body.course_name,
-                req.body.site_name,
-                req.body.site_email,
-                req.body.task_name,
-                req.body.start_time,
-                req.body.end_time,
-                req.body.meeting_link,
-                req.body.user_name,
+                req.body.learner_name || "learner_name",
+                req.body.course_name || "course_name",
+                req.body.site_name || "site_name",
+                req.body.site_email || "site_email",
+                req.body.task_name || "task_name",
+                req.body.start_time || "start_time",
+                req.body.end_time || "end_time",
+                req.body.meeting_link || "meeting_link",
+                req.body.user_name || "user_name",
+                req.body.site_url || "site_url",
             );
             const data = await sesClient.send(sendReminderEmailCommand);
             res.send({
