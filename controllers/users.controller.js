@@ -497,6 +497,34 @@ module.exports.addBulkStudent = async (req, res) => {
 //   const { users, relatedData } = req.body;
 //   const insertedUsersData = []; // Array to store inserted user data
 
+//   // demo data
+//   //   {
+//   //   "users": [
+//   //     {
+//   //       "name": "talha",
+//   //       "phone": 1858399223,
+//   //       "email": "tanvirgame121@gmail.com",
+//   //       "alternatePhone": "-",
+//   //       "registrationNumber": 5076,
+//   //       "dateOfBirth": "-",
+//   //       "parentName": "-",
+//   //       "parentPhone": "-",
+//   //       "parentEmail": "-",
+//   //       "address": "-",
+//   //       "city": "-",
+//   //       "state": "-",
+//   //       "standard": "-",
+//   //       "dateCreated": "03-15-2024",
+//   //       "userName": "talha8828063"
+//   //     }
+//   //   ],
+//   //   "relatedData": {
+//   //     "role": "user",
+//   //     "organizationId": "65b256d3ba06f8afaf90dd75",
+//   //     "organizationName": "WiseUp"
+//   //   }
+//   // }
+
 //   try {
 //     // Add users to Firebase using the function
 //     for (const user of users) {
@@ -585,6 +613,17 @@ module.exports.updateUsersInCourseBatch = async (req, res) => {
 
 // important update users in course batch function it may need in future
 // module.exports.updateUsersInCourseBatch = async (req, res) => {
+//   // demo data
+//   //   {
+//   //   "userEnrollments": [
+//   //     {
+//   //       "email": "abhidutta4321@gmail.com",
+//   //       "enrollDate": "7/5/23"
+//   //     }
+//   //   ],
+//   //   "courseId": "65c9bb305d6ab7134de4f35b",
+//   //   "batchId": "65c9bb305d6ab7134de4f35c"
+//   // }
 //   try {
 //     const { userEnrollments, courseId, batchId } = req.body;
 
