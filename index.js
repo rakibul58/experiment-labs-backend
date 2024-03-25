@@ -50,6 +50,7 @@ const offerRoutes = require("./routes/v1/offer.route");
 const notificationsRoutes = require("./routes/v1/notifications.route");
 const bundleRoutes = require("./routes/v1/bundles.route");
 const uploadFileRoutes = require("./routes/v1/uploadFile.route");
+const questionBankRoutes = require("./routes/v1/questionBank.route");
 
 //Calling Functions
 startCronJob();
@@ -94,6 +95,7 @@ app.use("/api/v1/offers", offerRoutes);
 app.use("/api/v1/notifications", notificationsRoutes);
 app.use("/api/v1/bundles", bundleRoutes);
 app.use("/api/v1/uploadFile", uploadFileRoutes);
+app.use("/api/v1/questionBank", questionBankRoutes);
 
 app.get("/", (req, res) => {
   res.send("Experiment Labs server is running");
