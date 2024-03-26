@@ -2,6 +2,7 @@ const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const userCollection = client.db("experiment-labs").collection("users");
 const receiptCollection = client.db("experiment-labs").collection("receipts");
+const refundCollection = client.db("experiment-labs").collection("refund");
 
 const courseCollection = client.db("experiment-labs").collection("courses");
 const organizationCollection = client
@@ -200,6 +201,66 @@ module.exports.verifyPayment = async (req, res, next) => {
     });
   }
 };
+
+module.exports.refundPayment = async (req, res, next) => {
+  const { receiptId } = req.body;
+  const receipt = await receiptCollection.findOne({ _id: new ObjectId(receiptId) });
+  const organizationData = await organizationCollection.findOne({ _id: new ObjectId(receipt?.organizationId) });
+  const { paymentInstance } = organizationData;
+  const paymentId = receipt?.razorpay_payment_id;
+
+  try {
+    let refundResponse = {};
+    if (paymentId) {
+      const instance = new Razorpay(paymentInstance);
+      refundResponse = await instance.payments.refund(paymentId, {
+        "speed": "optimum",
+        "receipt": receiptId
+      });
+      // console.log(refundResponse);
+    }
+
+
+    // Courses and batchIds from the receipt for detailed tracking
+    const coursesAndBatches = receipt.courses.map(course => ({
+      courseId: course.courseId,
+      batchId: course.batchId,
+    }));
+
+    // Step 3: Unenroll the student by removing all courses associated with the receiptId
+    const unenrollResult = await userCollection.updateOne(
+      { _id: new ObjectId(receipt?.userId) },
+      { $pull: { courses: { courseId: { $in: coursesAndBatches.map(c => c.courseId) } } } }
+    );
+
+    // Step 4: Record the refund in your database, including course and batch IDs
+    const refundRecord = {
+      userId: receipt?.userId,
+      courses: coursesAndBatches,
+      razorpay_payment_id: receipt?.razorpay_payment_id,
+      amount: receipt.paidAmount,
+      refundedAt: new Date(),
+      refundResponse
+    };
+    const recordResult = await refundCollection.insertOne(refundRecord);
+
+    // Send response
+    res.send({
+      success: true,
+      message: "Refund initiated and student unenrolled successfully.",
+      refundResponse,
+      unenrollResult,
+      recordResult,
+    });
+  } catch (error) {
+    console.error('Error during refund and unenrollment based on receipt:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process refund and unenrollment based on receipt.',
+      error: error.message
+    });
+  }
+}
 
 module.exports.verifyBundlePayment = async (req, res, next) => {
   // Destructure the required fields from the request body, including the courses array
