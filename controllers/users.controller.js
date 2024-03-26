@@ -279,6 +279,7 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
     originalPrice,
     paidAmount,
     userId,
+    bundleId
   } = req.body;
 
   const body = `${razorpay_order_id}|${razorpay_payment_id}`;
@@ -305,6 +306,7 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
       userId,
       razorpay_payment_id,
       razorpay_order_id,
+      bundleId,
       paidAt: new Date(),
     };
 
