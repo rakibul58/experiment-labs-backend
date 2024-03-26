@@ -153,7 +153,7 @@ module.exports.addATask = async (req, res, next) => {
     taskName,
     batches: batches,
     contentStage: task?.contentStage,
-    taskDrip: task?.taskDrip
+    taskDrip: task?.taskDrip,
   };
 
   const updatedDoc = {
@@ -687,45 +687,45 @@ module.exports.addTaskCompletionDetails = async (req, res, next) => {
       { $set: { participants: taskDocument.participants } }
     );
 
-    if (result) {
-      // Search for the user in userCollection using their email
-      const user = await userCollection.findOne({
-        email: participantTask.participant.email,
-      });
+    // if (result) {
+    //   // Search for the user in userCollection using their email
+    //   const user = await userCollection.findOne({
+    //     email: participantTask.participant.email,
+    //   });
 
-      if (user) {
-        // Check if the user already has a course entry with the same courseId
-        const existingCourseIndex = user.courses
-          ? user.courses.findIndex(
-            (course) => course.courseId === chapterDocument?.courseId
-          )
-          : -1;
+    //   if (user) {
+    //     // Check if the user already has a course entry with the same courseId
+    //     const existingCourseIndex = user.courses
+    //       ? user.courses.findIndex(
+    //         (course) => course.courseId === chapterDocument?.courseId
+    //       )
+    //       : -1;
 
-        if (existingCourseIndex !== -1) {
-          // User has an existing course entry, update completedTask count
-          user.courses[existingCourseIndex].completedTask++;
-        } else {
-          // User doesn't have a course entry for this courseId, create a new one
-          const newCourseEntry = {
-            courseId: chapterDocument?.courseId,
-            // courseName: courseName,
-            completedTask: 1, // Initialize completedTask to 1 for the new course
-          };
-          if (!user.courses) {
-            user.courses = []; // Initialize the courses array if it doesn't exist
-          }
-          user.courses.push(newCourseEntry);
-        }
+    //     if (existingCourseIndex !== -1) {
+    //       // User has an existing course entry, update completedTask count
+    //       user.courses[existingCourseIndex].completedTask++;
+    //     } else {
+    //       // User doesn't have a course entry for this courseId, create a new one
+    //       const newCourseEntry = {
+    //         courseId: chapterDocument?.courseId,
+    //         // courseName: courseName,
+    //         completedTask: 1, // Initialize completedTask to 1 for the new course
+    //       };
+    //       if (!user.courses) {
+    //         user.courses = []; // Initialize the courses array if it doesn't exist
+    //       }
+    //       user.courses.push(newCourseEntry);
+    //     }
 
-        // Update the user document in userCollection
-        await userCollection.updateOne(
-          { email: participantTask.participant.email },
-          { $set: { courses: user.courses } }
-        );
-      }
+    //     // Update the user document in userCollection
+    //     await userCollection.updateOne(
+    //       { email: participantTask.participant.email },
+    //       { $set: { courses: user.courses } }
+    //     );
+    //   }
 
-      res.status(200).json(result);
-    }
+    // }
+    res.status(200).json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
