@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const eventCollection = client.db("experiment-labs").collection("events");
+const eventRequestCollection = client.db("experiment-labs").collection("eventRequests");
 
 module.exports.addAnEvent = async (req, res, next) => {
   const event = req.body;
@@ -32,3 +33,27 @@ module.exports.getEventsByEmail = async (req, res, next) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+module.exports.eventRequest = async (req, res, next) => {
+  try {
+    const data = req.body;
+    const result = await eventRequestCollection.insertOne(data);
+    res.send(result);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+
+module.exports.fetchEventRequest = async (req, res, next) => {
+  try {
+    const organizationId = req.params.organizationId;
+    const result = await eventRequestCollection.find(organizationId).toArray();
+    res.send(result);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
