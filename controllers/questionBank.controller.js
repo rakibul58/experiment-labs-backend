@@ -52,28 +52,22 @@ module.exports.getQuestionsForQuizAndBatch = async (req, res) => {
       return res.status(404).json({ message: "Quiz not found" });
     }
 
-    // Find the batch questions data for the given batch ID
-    const batchQuestions = quiz.questions.find(
-      (batch) => batch.batchId === batchId
-    );
-    if (!batchQuestions) {
-      return res
-        .status(404)
-        .json({ message: "No questions found for the batch" });
-    }
+    // Collect questions for the specified batch from the quiz data
+    const questions = quiz.questions.reduce((acc, question) => {
+      if (question.batches.includes(batchId)) {
+        acc.push(question.questionId);
+      }
+      return acc;
+    }, []);
 
-    // Collect questions from the questionBank using question IDs
-    const questions = await questionsCollection
+    // Fetch the actual question data from the questionBank using question IDs
+    const questionData = await questionsCollection
       .find({
-        _id: {
-          $in: batchQuestions.questions.map((questionId) =>
-            ObjectId(questionId)
-          ),
-        },
+        _id: { $in: questions.map((questionId) => ObjectId(questionId)) },
       })
       .toArray();
 
-    res.status(200).json(questions);
+    res.status(200).json(questionData);
   } catch (error) {
     console.error("Error fetching questions for quiz and batch:", error);
     res.status(500).json({ message: "Internal server error" });
