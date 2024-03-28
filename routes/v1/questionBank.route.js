@@ -13,4 +13,10 @@ router
   .route("/quizId/:quizId/batchId/:batchId")
   .get(questionControllers.getQuestionsForQuizAndBatch);
 
+router.route("/questionId/:questionId").put(questionControllers.updateQuestion);
+
+router
+  .route("/questionId/:questionId")
+  .delete(questionControllers.deleteQuestion);
+
 module.exports = router;
