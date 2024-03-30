@@ -797,7 +797,7 @@ module.exports.addDeviceToUser = async (req, res) => {
     // Check if the device already exists in the user's devices array
     if (user.devices && user.devices.includes(device)) {
       return res
-        .status(400)
+        .status(200)
         .json({ message: "Device already exists for the user" });
     }
 
