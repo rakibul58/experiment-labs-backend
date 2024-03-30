@@ -73,3 +73,47 @@ module.exports.getQuestionsForQuizAndBatch = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+module.exports.updateQuestion = async (req, res) => {
+  try {
+    const questionId = req.params.questionId;
+    const updatedQuestion = req.body;
+
+    // Update the question in the questionBank collection
+    const result = await questionsCollection.updateOne(
+      { _id: ObjectId(questionId) },
+      { $set: updatedQuestion }
+    );
+
+    // Check if the update was successful
+    if (result.modifiedCount === 1) {
+      res.status(200).json({ message: "Question updated successfully" });
+    } else {
+      res.status(404).json({ message: "Question not found or not updated" });
+    }
+  } catch (error) {
+    console.error("Error updating question:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.deleteQuestion = async (req, res) => {
+  try {
+    const questionId = req.params.questionId;
+
+    // Delete the question from the questionBank collection
+    const result = await questionsCollection.deleteOne({
+      _id: ObjectId(questionId),
+    });
+
+    // Check if the deletion was successful
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: "Question deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Question not found or not deleted" });
+    }
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
