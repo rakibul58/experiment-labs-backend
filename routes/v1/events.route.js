@@ -14,10 +14,15 @@ router
 
 router
   .route("/request/organizationId/:organizationId")
-  .get(eventControllers.fetchEventRequest);
+  .post(eventControllers.fetchEventRequest);
 
 router.route("/:id").get(eventControllers.getAnEvent);
 
 router.route("/email/:email").get(eventControllers.getEventsByEmail);
+
+
+router
+  .route("/create-zoom-meeting/organizationId/:organizationId")
+  .get(eventControllers.createZoomMeeting);
 
 module.exports = router;

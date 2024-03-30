@@ -2,6 +2,9 @@ const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const eventCollection = client.db("experiment-labs").collection("events");
 const eventRequestCollection = client.db("experiment-labs").collection("eventRequests");
+const orgCollection = client.db('experiment-labs').collection('organizations');
+const axios = require('axios');
+const qs = require('querystring');
 
 module.exports.addAnEvent = async (req, res, next) => {
   const event = req.body;
@@ -56,4 +59,52 @@ module.exports.fetchEventRequest = async (req, res, next) => {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+}
+
+
+module.exports.createZoomMeeting = async (req, res, next) => {
+
+  try {
+    const organizationId = req.params.organizationId;
+    const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
+    const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
+    const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
+
+    const request = await axios.post(
+      "https://zoom.us/oauth/token",
+      qs.stringify({ grant_type: 'account_credentials', account_id: accountId }),
+      {
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        }
+      }
+    );
+
+    const accessToken = request.data.access_token;
+
+    const body = {
+      topic: "New Info Meeting",
+      type: 2,
+      duration: 60
+    };
+
+    const meetingResponse = await axios.post(
+      'https://api.zoom.us/v2/users/me/meetings',
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+      }
+    );
+
+    res.send(meetingResponse?.data);
+
+
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+
 }
