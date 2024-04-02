@@ -3,20 +3,20 @@ const organizationControllers = require("../../controllers/organizations.control
 
 const router = express.Router();
 
-router
-    .route("/")
-    .post(organizationControllers.createAnOrganization);
-    
-    
-    router
-    .route("/:id")
-    .get(organizationControllers.getAnOrganization)
-    .put(organizationControllers.updateAnOrganization);
-    
-    router
-    .route("/e/:id")
-    .get(organizationControllers.getEncryptedData)
-    .put(organizationControllers.updateEncryptedData)
+router.route("/").post(organizationControllers.createAnOrganization);
 
+router
+  .route("/:id")
+  .get(organizationControllers.getAnOrganization)
+  .put(organizationControllers.updateAnOrganization);
+
+router
+  .route("/e/:id")
+  .get(organizationControllers.getEncryptedData)
+  .put(organizationControllers.updateEncryptedData);
+
+router
+  .route("/findOrg")
+  .post(organizationControllers.getOrganizationByOrgDefaultUrl);
 
 module.exports = router;
