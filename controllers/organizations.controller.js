@@ -188,10 +188,11 @@ module.exports.getOrganizationByOrgDefaultUrl = async (req, res) => {
     if (organization) {
       // If organization is found, return it
       res.status(200).json({ organization });
-    } else {
-      // If organization is not found, return 404
-      res.status(404).json({ message: "Organization not found" });
     }
+    // else {
+    //   // If organization is not found, return 404
+    //   res.status(404).json({ message: "Organization not found" });
+    // }
   } catch (error) {
     console.error("Error retrieving organization:", error);
     res.status(500).json({ message: "Internal Server Error" });
