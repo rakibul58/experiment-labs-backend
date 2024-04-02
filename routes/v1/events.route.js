@@ -23,6 +23,6 @@ router.route("/email/:email").get(eventControllers.getEventsByEmail);
 
 router
   .route("/create-zoom-meeting/organizationId/:organizationId")
-  .get(eventControllers.createZoomMeeting);
+  .post(eventControllers.createZoomMeeting);
 
 module.exports = router;

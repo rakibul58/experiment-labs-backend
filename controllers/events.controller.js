@@ -66,6 +66,7 @@ module.exports.createZoomMeeting = async (req, res, next) => {
 
   try {
     const organizationId = req.params.organizationId;
+    const { start_time , duration } = req.body;
     const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
     const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
     const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
@@ -83,9 +84,12 @@ module.exports.createZoomMeeting = async (req, res, next) => {
     const accessToken = request.data.access_token;
 
     const body = {
-      topic: "New Info Meeting",
+      topic: "Doubt Clearing Session",
       type: 2,
-      duration: 60
+      waiting_room: true,
+      timezone: "Asia/Kolkata",
+      start_time: start_time,
+      duration: duration
     };
 
     const meetingResponse = await axios.post(
