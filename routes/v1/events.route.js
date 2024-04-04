@@ -16,13 +16,17 @@ router
   .route("/request/organizationId/:organizationId")
   .post(eventControllers.fetchEventRequest);
 
+router
+  .route("/recording/organizationId/:organizationId")
+  .post(eventControllers.fetchRecording);
+
 router.route("/:id").get(eventControllers.getAnEvent);
 
 router.route("/email/:email").get(eventControllers.getEventsByEmail);
 
 
 router
-  .route("/create-zoom-meeting/organizationId/:organizationId")
+  .route("/meeting/organizationId/:organizationId")
   .post(eventControllers.createZoomMeeting);
 
 module.exports = router;

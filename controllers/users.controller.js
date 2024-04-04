@@ -204,13 +204,17 @@ module.exports.verifyPayment = async (req, res, next) => {
 
 module.exports.refundPayment = async (req, res, next) => {
   const { receiptId } = req.body;
+  // console.log("ReceiptId", receiptId);
   const receipt = await receiptCollection.findOne({ _id: new ObjectId(receiptId) });
+  // console.log("Receipt", receipt);
   const organizationData = await organizationCollection.findOne({ _id: new ObjectId(receipt?.organizationId) });
+  // console.log("organizationData", organizationData);
   const { paymentInstance } = organizationData;
   const paymentId = receipt?.razorpay_payment_id;
 
   try {
     let refundResponse = {};
+    
     if (paymentId) {
       const instance = new Razorpay(paymentInstance);
       refundResponse = await instance.payments.refund(paymentId, {
@@ -219,7 +223,6 @@ module.exports.refundPayment = async (req, res, next) => {
       });
       // console.log(refundResponse);
     }
-
 
     // Courses and batchIds from the receipt for detailed tracking
     const coursesAndBatches = receipt.courses.map(course => ({
@@ -254,7 +257,7 @@ module.exports.refundPayment = async (req, res, next) => {
     });
   } catch (error) {
     console.error('Error during refund and unenrollment based on receipt:', error);
-    res.status(500).json({
+    res.send({
       success: false,
       message: 'Failed to process refund and unenrollment based on receipt.',
       error: error.message
