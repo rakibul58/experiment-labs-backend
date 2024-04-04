@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const classCollection = client.db('experiment-labs').collection('classes');
+const axios = require('axios');
 
 module.exports.addAnAttendee = async (req, res, next) => {
     const classId = req.params.id;
@@ -42,9 +43,12 @@ module.exports.addAnAttendee = async (req, res, next) => {
 
 module.exports.createAMeeting = async (req, res, next) => {
     try {
-        const clientID = process.env.zoom_clientId;
-        const clientSecret = process.env.zoom_clientSecret;
-        const redirectURI = process.env.zoom_redirectUri; // The same as used in your frontend
+        // const clientID = process.env.zoom_clientId;
+        // const clientSecret = process.env.zoom_clientSecret;
+        // const redirectURI = process.env.zoom_redirectUri; 
+        const {clientID , clientSecret, redirectURI} = req.body;
+        console.log({clientID , clientSecret, redirectURI});
+        
         // Step 1: Exchange authorization code for access token
         const authCode = req.body.authCode;
         const manageClass = req.body.manageClass;
