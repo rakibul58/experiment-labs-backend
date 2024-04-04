@@ -1026,21 +1026,77 @@ module.exports.addOrUpdateUserWithCourse = async (req, res) => {
     const existingUser = await userCollection.findOne({ email: user.email });
 
     if (existingUser) {
+      const enrollDate = new Date();
       // User exists, update the user's courses
-      const updatedUser = await userCollection.findOneAndUpdate(
-        { email: user.email },
-        {
-          $addToSet: {
-            courses: { courseId, batchId },
-            // Add more fields to update if needed
+      // const updatedUser = await userCollection.findOneAndUpdate(
+      //   { email: user.email },
+      //   {
+      //     $addToSet: {
+      //       courses: { courseId, batchId, enrollDate },
+      //       // Add more fields to update if needed
+      //     },
+      //   },
+      //   { returnOriginal: false }
+      // );
+
+      // let updatedUser = await userCollection.updateOne(
+      //   { email: user.email, "courses.courseId": courseId },
+      //   {
+      //     $set: {
+      //       "courses.$.batchId": batchId,
+      //       "courses.$.enrollDate": new Date(),
+      //       "courses.$.paidAmount": user?.paidAmount,
+      //     },
+      //   },
+      //   { upsert: true }
+      // );
+
+      // console.log("Upserted ID:", updatedUser.upsertedId);
+      let updatedUser;
+
+      if (existingUser.courses && existingUser.courses.length > 0) {
+        // Update existing course if courseId exists
+        updatedUser = await userCollection.updateOne(
+          { email: user.email, "courses.courseId": courseId },
+          {
+            $set: {
+              "courses.$.batchId": batchId,
+              "courses.$.enrollDate": new Date(),
+              "courses.$.paidAmount": user?.paidAmount,
+            },
           },
-        },
-        { returnOriginal: false }
-      );
+          { upsert: true }
+        );
+      } else {
+        // Create a new courses array with the current course
+        updatedUser = await userCollection.updateOne(
+          { email: user.email },
+          {
+            $set: {
+              courses: [{ courseId, batchId, enrollDate }],
+            },
+          },
+          { upsert: true }
+        );
+      }
+
+      if (updatedUser.modifiedCount === 0) {
+        updatedUser = await userCollection.findOneAndUpdate(
+          { email: user.email },
+          {
+            $addToSet: {
+              courses: { courseId, batchId, enrollDate },
+              // Add more fields to update if needed
+            },
+          },
+          { returnOriginal: false }
+        );
+      }
 
       res.status(200).json({
         message: "User's courses updated successfully",
         updatedUser,
+        existingUser,
       });
     } else {
       // User does not exist, add the user with courses
@@ -1062,9 +1118,11 @@ module.exports.addOrUpdateUserWithCourse = async (req, res) => {
           .json({ message: "Failed to create user in Firebase" });
       }
 
+      const enrollDate = new Date();
+
       const insertedUser = await userCollection.insertOne({
         ...user,
-        courses: [{ courseId, batchId }],
+        courses: [{ courseId, batchId, enrollDate }],
       });
 
       res.status(200).json({
