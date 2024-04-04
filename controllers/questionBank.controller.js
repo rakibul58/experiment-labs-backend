@@ -42,7 +42,7 @@ module.exports.getQuestionsByOrganizationId = async (req, res) => {
   }
 };
 
-module.exports.getQuestionsForQuizAndBatch = async (req, res) => {
+/* module.exports.getQuestionsForQuizAndBatch = async (req, res) => {
   try {
     const { quizId, batchId } = req.params;
 
@@ -68,6 +68,40 @@ module.exports.getQuestionsForQuizAndBatch = async (req, res) => {
       .toArray();
 
     res.status(200).json(questionData);
+  } catch (error) {
+    console.error("Error fetching questions for quiz and batch:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}; */
+
+module.exports.getQuestionsForQuizAndBatch = async (req, res) => {
+  try {
+    const { quizId, batchId } = req.params;
+
+    // Find the quiz by its ID
+    const quiz = await quizCollection.findOne({ _id: ObjectId(quizId) });
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
+    // Get the array of question IDs in the same sequence as they appear in the quiz
+    const questionIds = quiz.questions
+      .filter((question) => question.batches.includes(batchId))
+      .map((question) => question.questionId);
+
+    // Fetch the actual question data from the questionBank using question IDs
+    const questionData = await questionsCollection
+      .find({
+        _id: { $in: questionIds.map((questionId) => ObjectId(questionId)) },
+      })
+      .toArray();
+
+    // Sort the question data based on the original sequence of question IDs in the quiz
+    const sortedQuestions = questionIds.map((questionId) =>
+      questionData.find((question) => question._id.toString() === questionId)
+    );
+
+    res.status(200).json(sortedQuestions);
   } catch (error) {
     console.error("Error fetching questions for quiz and batch:", error);
     res.status(500).json({ message: "Internal server error" });
