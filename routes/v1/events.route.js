@@ -29,4 +29,8 @@ router
   .route("/meeting/organizationId/:organizationId")
   .post(eventControllers.createZoomMeeting);
 
+router
+  .route("/account/organizationId/:organizationId")
+  .patch(eventControllers.updateAccountSettings);
+
 module.exports = router;

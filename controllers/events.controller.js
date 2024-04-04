@@ -66,7 +66,7 @@ module.exports.createZoomMeeting = async (req, res, next) => {
 
   try {
     const organizationId = req.params.organizationId;
-    const { start_time , duration } = req.body;
+    const { start_time, duration } = req.body;
     const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
     const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
     const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
@@ -151,6 +151,49 @@ module.exports.fetchRecording = async (req, res, next) => {
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error", error });
+  }
+
+}
+
+
+module.exports.updateAccountSettings = async (req, res, next) => {
+
+  try {
+    const organizationId = req.params.organizationId;
+    const data = req.body;
+    const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
+    const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
+    const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
+
+    const request = await axios.post(
+      "https://zoom.us/oauth/token",
+      qs.stringify({ grant_type: 'account_credentials', account_id: accountId }),
+      {
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+        }
+      }
+    );
+
+    const accessToken = request.data.access_token;
+
+    const settingResponse = await axios.patch(
+      `https://api.zoom.us/v2/accounts/me/settings`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+      }
+    );
+
+    res.send(settingResponse?.data);
+
+
+  } catch (error) {
+    console.error("Error:", error.response);
+    res.send({ message: "Internal server error", error: error });
   }
 
 }
