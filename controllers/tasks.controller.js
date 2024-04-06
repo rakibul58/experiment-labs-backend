@@ -831,6 +831,52 @@ module.exports.addEvent = async (req, res, next) => {
   }
 };
 
+module.exports.updateEvent = async (req, res, next) => {
+  const eventId = req.params.id;
+  const updatedEvent = req.body;
+
+  try {
+    // Try to find the document by its _id
+    const existingEvent = await scheduleCollection.findOne({
+      _id: new ObjectId(eventId),
+    });
+
+    if (!existingEvent) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // Find the index of the event to update in the events array
+    const eventIndex = existingEvent.events.findIndex(
+      (event) => event.eventId === updatedEvent.eventId
+    );
+
+    if (eventIndex === -1) {
+      return res.status(404).json({ message: "Event not found in schedule" });
+    }
+
+    // Update the event at the found index
+    existingEvent.events[eventIndex] = updatedEvent;
+
+    // Update the document with the modified events array
+    const updateResult = await scheduleCollection.updateOne(
+      { _id: new ObjectId(eventId) },
+      { $set: { events: existingEvent.events } }
+    );
+
+    if (updateResult.matchedCount > 0) {
+      res.status(200).json({ message: "Event updated successfully" });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Failed to update event in existing document",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports.removeFile = async (req, res, next) => {
   const assignmentId = req.params.taskId;
   try {
