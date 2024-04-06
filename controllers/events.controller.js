@@ -178,7 +178,7 @@ module.exports.updateAccountSettings = async (req, res, next) => {
     const accessToken = request.data.access_token;
 
     const settingResponse = await axios.patch(
-      `https://api.zoom.us/v2/accounts/me/settings`,
+      `https://api.zoom.us/v2/accounts/me/settings?option=recording_authentication`,
       data,
       {
         headers: {
@@ -188,6 +188,7 @@ module.exports.updateAccountSettings = async (req, res, next) => {
       }
     );
 
+    // res.send({accessToken: request.data});
     res.send(settingResponse?.data);
 
 
@@ -196,4 +197,22 @@ module.exports.updateAccountSettings = async (req, res, next) => {
     res.send({ message: "Internal server error", error: error });
   }
 
+}
+
+
+module.exports.updateAnEvent = async (req, res, next) => {
+  const { id } = req.params;
+  const updateData = req.body;
+
+  try {
+
+    const filter = { _id: new ObjectId(id) };
+    const updateDoc = { $set: updateData };
+    const result = await eventCollection.updateOne(filter, updateDoc);
+
+    res.send(result);
+  } catch (error) {
+    console.error("Error:", error.response);
+    res.send({ message: "Internal server error", error: error });
+  }
 }

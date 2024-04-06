@@ -20,9 +20,14 @@ router
   .route("/recording/organizationId/:organizationId")
   .post(eventControllers.fetchRecording);
 
-router.route("/:id").get(eventControllers.getAnEvent);
+router
+  .route("/:id")
+  .get(eventControllers.getAnEvent)
+  .put(eventControllers.updateAnEvent);
 
-router.route("/email/:email").get(eventControllers.getEventsByEmail);
+router
+  .route("/email/:email")
+  .get(eventControllers.getEventsByEmail);
 
 
 router
