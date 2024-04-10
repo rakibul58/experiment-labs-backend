@@ -205,27 +205,31 @@ module.exports.verifyPayment = async (req, res, next) => {
 module.exports.refundPayment = async (req, res, next) => {
   const { receiptId } = req.body;
   // console.log("ReceiptId", receiptId);
-  const receipt = await receiptCollection.findOne({ _id: new ObjectId(receiptId) });
+  const receipt = await receiptCollection.findOne({
+    _id: new ObjectId(receiptId),
+  });
   // console.log("Receipt", receipt);
-  const organizationData = await organizationCollection.findOne({ _id: new ObjectId(receipt?.organizationId) });
+  const organizationData = await organizationCollection.findOne({
+    _id: new ObjectId(receipt?.organizationId),
+  });
   // console.log("organizationData", organizationData);
   const { paymentInstance } = organizationData;
   const paymentId = receipt?.razorpay_payment_id;
 
   try {
     let refundResponse = {};
-    
+
     if (paymentId) {
       const instance = new Razorpay(paymentInstance);
       refundResponse = await instance.payments.refund(paymentId, {
-        "speed": "optimum",
-        "receipt": receiptId
+        speed: "optimum",
+        receipt: receiptId,
       });
       // console.log(refundResponse);
     }
 
     // Courses and batchIds from the receipt for detailed tracking
-    const coursesAndBatches = receipt.courses.map(course => ({
+    const coursesAndBatches = receipt.courses.map((course) => ({
       courseId: course.courseId,
       batchId: course.batchId,
     }));
@@ -233,7 +237,13 @@ module.exports.refundPayment = async (req, res, next) => {
     // Step 3: Unenroll the student by removing all courses associated with the receiptId
     const unenrollResult = await userCollection.updateOne(
       { _id: new ObjectId(receipt?.userId) },
-      { $pull: { courses: { courseId: { $in: coursesAndBatches.map(c => c.courseId) } } } }
+      {
+        $pull: {
+          courses: {
+            courseId: { $in: coursesAndBatches.map((c) => c.courseId) },
+          },
+        },
+      }
     );
 
     // Step 4: Record the refund in your database, including course and batch IDs
@@ -243,7 +253,7 @@ module.exports.refundPayment = async (req, res, next) => {
       razorpay_payment_id: receipt?.razorpay_payment_id,
       amount: receipt.paidAmount,
       refundedAt: new Date(),
-      refundResponse
+      refundResponse,
     };
     const recordResult = await refundCollection.insertOne(refundRecord);
 
@@ -256,14 +266,17 @@ module.exports.refundPayment = async (req, res, next) => {
       recordResult,
     });
   } catch (error) {
-    console.error('Error during refund and unenrollment based on receipt:', error);
+    console.error(
+      "Error during refund and unenrollment based on receipt:",
+      error
+    );
     res.send({
       success: false,
-      message: 'Failed to process refund and unenrollment based on receipt.',
-      error: error.message
+      message: "Failed to process refund and unenrollment based on receipt.",
+      error: error.message,
     });
   }
-}
+};
 
 module.exports.verifyBundlePayment = async (req, res, next) => {
   // Destructure the required fields from the request body, including the courses array
@@ -282,7 +295,7 @@ module.exports.verifyBundlePayment = async (req, res, next) => {
     originalPrice,
     paidAmount,
     userId,
-    bundleId
+    bundleId,
   } = req.body;
 
   const body = `${razorpay_order_id}|${razorpay_payment_id}`;
@@ -1018,6 +1031,126 @@ module.exports.addAnInteraction = async (req, res) => {
   res.send(result);
 };
 
+// module.exports.addOrUpdateUserWithCourse = async (req, res) => {
+//   try {
+//     const { user, courseId, batchId } = req.body;
+
+//     // Check if the user already exists in the database
+//     const existingUser = await userCollection.findOne({ email: user.email });
+
+//     if (existingUser) {
+//       const enrollDate = new Date();
+//       // User exists, update the user's courses
+//       // const updatedUser = await userCollection.findOneAndUpdate(
+//       //   { email: user.email },
+//       //   {
+//       //     $addToSet: {
+//       //       courses: { courseId, batchId, enrollDate },
+//       //       // Add more fields to update if needed
+//       //     },
+//       //   },
+//       //   { returnOriginal: false }
+//       // );
+
+//       // let updatedUser = await userCollection.updateOne(
+//       //   { email: user.email, "courses.courseId": courseId },
+//       //   {
+//       //     $set: {
+//       //       "courses.$.batchId": batchId,
+//       //       "courses.$.enrollDate": new Date(),
+//       //       "courses.$.paidAmount": user?.paidAmount,
+//       //     },
+//       //   },
+//       //   { upsert: true }
+//       // );
+
+//       // console.log("Upserted ID:", updatedUser.upsertedId);
+//       let updatedUser;
+
+//       if (existingUser.courses && existingUser.courses.length > 0) {
+//         // Update existing course if courseId exists
+//         updatedUser = await userCollection.updateOne(
+//           { email: user.email, "courses.courseId": courseId },
+//           {
+//             $set: {
+//               "courses.$.batchId": batchId,
+//               "courses.$.enrollDate": new Date(),
+//               "courses.$.paidAmount": user?.paidAmount,
+//             },
+//           },
+//           { upsert: true }
+//         );
+//       } else {
+//         // Create a new courses array with the current course
+//         updatedUser = await userCollection.updateOne(
+//           { email: user.email },
+//           {
+//             $set: {
+//               courses: [{ courseId, batchId, enrollDate }],
+//             },
+//           },
+//           { upsert: true }
+//         );
+//       }
+
+//       if (updatedUser.modifiedCount === 0) {
+//         updatedUser = await userCollection.findOneAndUpdate(
+//           { email: user.email },
+//           {
+//             $addToSet: {
+//               courses: { courseId, batchId, enrollDate },
+//               // Add more fields to update if needed
+//             },
+//           },
+//           { returnOriginal: false }
+//         );
+//       }
+
+//       res.status(200).json({
+//         message: "User's courses updated successfully",
+//         updatedUser,
+//         existingUser,
+//       });
+//     } else {
+//       // User does not exist, add the user with courses
+//       // Generate a custom password
+//       const password = passwordUtils.generateCustomPassword(user);
+//       user.password = password;
+
+//       const firebaseResult = await firebaseUtils.createUserWithEmailAndPassword(
+//         user.email,
+//         password
+//       );
+
+//       if (!firebaseResult.success) {
+//         console.error(
+//           `Failed to create user in Firebase for email: ${user.email}`
+//         );
+//         return res
+//           .status(500)
+//           .json({ message: "Failed to create user in Firebase" });
+//       }
+
+//       const enrollDate = new Date();
+
+//       const insertedUser = await userCollection.insertOne({
+//         ...user,
+//         courses: [{ courseId, batchId, enrollDate }],
+//       });
+
+//       res.status(200).json({
+//         message: "User added to MongoDB and Firebase successfully",
+//         insertedUser,
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error adding or updating user:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Internal server error", error: error.message });
+//   }
+// };
+
 module.exports.addOrUpdateUserWithCourse = async (req, res) => {
   try {
     const { user, courseId, batchId } = req.body;
@@ -1027,76 +1160,46 @@ module.exports.addOrUpdateUserWithCourse = async (req, res) => {
 
     if (existingUser) {
       const enrollDate = new Date();
-      // User exists, update the user's courses
-      // const updatedUser = await userCollection.findOneAndUpdate(
-      //   { email: user.email },
-      //   {
-      //     $addToSet: {
-      //       courses: { courseId, batchId, enrollDate },
-      //       // Add more fields to update if needed
-      //     },
-      //   },
-      //   { returnOriginal: false }
-      // );
 
-      // let updatedUser = await userCollection.updateOne(
-      //   { email: user.email, "courses.courseId": courseId },
-      //   {
-      //     $set: {
-      //       "courses.$.batchId": batchId,
-      //       "courses.$.enrollDate": new Date(),
-      //       "courses.$.paidAmount": user?.paidAmount,
-      //     },
-      //   },
-      //   { upsert: true }
-      // );
-
-      // console.log("Upserted ID:", updatedUser.upsertedId);
-      let updatedUser;
-
+      // Check if the user has existing courses
       if (existingUser.courses && existingUser.courses.length > 0) {
         // Update existing course if courseId exists
-        updatedUser = await userCollection.updateOne(
+        const updateResult = await userCollection.updateOne(
           { email: user.email, "courses.courseId": courseId },
           {
             $set: {
               "courses.$.batchId": batchId,
-              "courses.$.enrollDate": new Date(),
+              "courses.$.enrollDate": enrollDate,
               "courses.$.paidAmount": user?.paidAmount,
             },
-          },
-          { upsert: true }
+          }
         );
+
+        if (updateResult.modifiedCount === 0) {
+          // No matching course found, add a new course
+          await userCollection.updateOne(
+            { email: user.email },
+            {
+              $addToSet: {
+                courses: { courseId, batchId, enrollDate },
+              },
+            }
+          );
+        }
       } else {
-        // Create a new courses array with the current course
-        updatedUser = await userCollection.updateOne(
+        // User has no existing courses, add the new course
+        await userCollection.updateOne(
           { email: user.email },
           {
             $set: {
               courses: [{ courseId, batchId, enrollDate }],
             },
-          },
-          { upsert: true }
-        );
-      }
-
-      if (updatedUser.modifiedCount === 0) {
-        updatedUser = await userCollection.findOneAndUpdate(
-          { email: user.email },
-          {
-            $addToSet: {
-              courses: { courseId, batchId, enrollDate },
-              // Add more fields to update if needed
-            },
-          },
-          { returnOriginal: false }
+          }
         );
       }
 
       res.status(200).json({
         message: "User's courses updated successfully",
-        updatedUser,
-        existingUser,
       });
     } else {
       // User does not exist, add the user with courses
@@ -1120,14 +1223,13 @@ module.exports.addOrUpdateUserWithCourse = async (req, res) => {
 
       const enrollDate = new Date();
 
-      const insertedUser = await userCollection.insertOne({
+      await userCollection.insertOne({
         ...user,
         courses: [{ courseId, batchId, enrollDate }],
       });
 
       res.status(200).json({
         message: "User added to MongoDB and Firebase successfully",
-        insertedUser,
       });
     }
   } catch (error) {
