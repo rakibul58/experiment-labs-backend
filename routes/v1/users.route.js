@@ -16,7 +16,9 @@ router.route("/unpaidUsers/checkout").post(userControllers.checkoutPayment);
 
 router.route("/unpaidUsers/verifyPayment").post(userControllers.verifyPayment);
 
-router.route("/unpaidUsers/verifyBundlePayment").post(userControllers.verifyBundlePayment);
+router
+  .route("/unpaidUsers/verifyBundlePayment")
+  .post(userControllers.verifyBundlePayment);
 
 router.route("/unpaidUsers/enroll").post(userControllers.enrollAStudent);
 
@@ -55,5 +57,9 @@ router.route("/interactions").post(userControllers.addAnInteraction);
 router
   .route("/addOrUpdateUserWithCourse")
   .post(userControllers.addOrUpdateUserWithCourse);
+
+router
+  .route("/addOrUpdateUserWithBundle")
+  .post(userControllers.addOrUpdateUserWithBundle);
 
 module.exports = router;
