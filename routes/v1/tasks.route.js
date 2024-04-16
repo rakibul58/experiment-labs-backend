@@ -32,7 +32,7 @@ router.route("/updateEvent/:email").post(taskControllers.updateEvent);
 
 router.route("/:id/addEvent").post(taskControllers.addEvent);
 
-router.route("/:id/updateEvent").put(taskControllers.updateEvent);
+router.route("/:id/updateEvent").put(taskControllers.updateScheduleEvent);
 
 router.route("/assignments/taskId/:taskId").delete(taskControllers.removeFile);
 
