@@ -1240,6 +1240,112 @@ module.exports.addOrUpdateUserWithCourse = async (req, res) => {
   }
 };
 
+module.exports.addOrUpdateUserWithBundle = async (req, res) => {
+  try {
+    const { user, bundleId, courses } = req.body;
+
+    // Check if the user already exists in the database
+    const existingUser = await userCollection.findOne({ email: user.email });
+
+    if (existingUser) {
+      const enrollDate = new Date();
+
+      // Check if the user has existing courses
+      if (existingUser.courses && existingUser.courses.length > 0) {
+        // Update existing courses if courseId exists
+        await Promise.all(
+          courses.map(async (course) => {
+            const courseId = course.courseId;
+            const batchId = course.batchId;
+            const updateResult = await userCollection.updateOne(
+              { email: user.email, "courses.courseId": courseId },
+              {
+                $set: {
+                  "courses.$.batchId": batchId,
+                  "courses.$.enrollDate": enrollDate,
+                },
+              }
+            );
+
+            if (updateResult.modifiedCount === 0) {
+              // No matching course found, add a new course
+              await userCollection.updateOne(
+                { email: user.email },
+                {
+                  $addToSet: {
+                    courses: { courseId, batchId, enrollDate },
+                  },
+                }
+              );
+            }
+          })
+        );
+      } else {
+        // User has no existing courses, add the new courses
+        const newCourses = courses.map((course) => ({
+          courseId: course.courseId,
+          batchId: course.batchId,
+          enrollDate,
+        }));
+
+        await userCollection.updateOne(
+          { email: user.email },
+          {
+            $set: {
+              courses: newCourses,
+            },
+          }
+        );
+      }
+
+      res.status(200).json({
+        message: "User's courses updated successfully",
+      });
+    } else {
+      // User does not exist, add the user with courses
+      // Generate a custom password
+      const password = passwordUtils.generateCustomPassword(user);
+      user.password = password;
+
+      const firebaseResult = await firebaseUtils.createUserWithEmailAndPassword(
+        user.email,
+        password
+      );
+
+      if (!firebaseResult.success) {
+        console.error(
+          `Failed to create user in Firebase for email: ${user.email}`
+        );
+        return res
+          .status(500)
+          .json({ message: "Failed to create user in Firebase" });
+      }
+
+      const enrollDate = new Date();
+
+      const newCourses = courses.map((course) => ({
+        courseId: course.courseId,
+        batchId: course.batchId,
+        enrollDate,
+      }));
+
+      await userCollection.insertOne({
+        ...user,
+        courses: newCourses,
+      });
+
+      res.status(200).json({
+        message: "User added to MongoDB and Firebase successfully",
+      });
+    }
+  } catch (error) {
+    console.error("Error adding or updating user:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 module.exports.getAllPaidInfoWithPayerData = async (req, res) => {
   const organizationId = req.params.organizationId;
 
