@@ -33,6 +33,7 @@ router
 router
   .route("/meeting/organizationId/:organizationId")
   .post(eventControllers.createZoomMeeting);
+  // .patch(eventControllers.updateZoomMeeting);
 
 router
   .route("/account/organizationId/:organizationId")
