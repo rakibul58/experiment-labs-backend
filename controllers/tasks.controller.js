@@ -831,7 +831,7 @@ module.exports.addEvent = async (req, res, next) => {
   }
 };
 
-module.exports.updateEvent = async (req, res, next) => {
+module.exports.updateScheduleEvent = async (req, res, next) => {
   const eventId = req.params.id;
   const updatedEvent = req.body;
 
@@ -847,7 +847,7 @@ module.exports.updateEvent = async (req, res, next) => {
 
     // Find the index of the event to update in the events array
     const eventIndex = existingEvent.events.findIndex(
-      (event) => event.eventId === updatedEvent.eventId
+      (event) => event.eventDBid === updatedEvent.eventDBid
     );
 
     if (eventIndex === -1) {

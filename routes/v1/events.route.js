@@ -20,13 +20,23 @@ router
   .route("/recording/organizationId/:organizationId")
   .post(eventControllers.fetchRecording);
 
-router.route("/:id").get(eventControllers.getAnEvent);
+router
+  .route("/:id")
+  .get(eventControllers.getAnEvent)
+  .put(eventControllers.updateAnEvent);
 
-router.route("/email/:email").get(eventControllers.getEventsByEmail);
+router
+  .route("/email/:email")
+  .get(eventControllers.getEventsByEmail);
 
 
 router
   .route("/meeting/organizationId/:organizationId")
   .post(eventControllers.createZoomMeeting);
+  // .patch(eventControllers.updateZoomMeeting);
+
+router
+  .route("/account/organizationId/:organizationId")
+  .patch(eventControllers.updateAccountSettings);
 
 module.exports = router;
