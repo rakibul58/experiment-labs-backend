@@ -10,8 +10,6 @@ router
   .get(quizControllers.getAQuestionByQuizIdAndQuestionId)
   .put(quizControllers.updateAQuestionFromQuiz);
 
-router
-  .route("/questionId/:questionId")
-  .put(quizControllers.updateQuizQuestions);
+router.route("/quizId/:quizId").put(quizControllers.updateQuizQuestions);
 
 module.exports = router;
