@@ -126,7 +126,7 @@ const createReminderEmailCommand = (toAddress, fromAddress, templateName, learne
          * Destination: <h1>Hello Bilbo,</h1><p>Don't forget about the party gifts!</p>
          */
         Destination: { ToAddresses: [toAddress] },
-        TemplateData: JSON.stringify({ learner_name: learner_name, course_name: course_name, site_name: site_name, site_email: site_email, task_name: task_name, start_time: start_time, end_time: end_time, meeting_link: meeting_link, user_name: user_name, site_url: site_url, meeting_date: meeting_date, learner_email:learner_email }),
+        TemplateData: JSON.stringify({ learner_name: learner_name, course_name: course_name, site_name: site_name, site_email: site_email, task_name: task_name, start_time: start_time, end_time: end_time, meeting_link: meeting_link, user_name: user_name, site_url: site_url, meeting_date: meeting_date, learner_email: learner_email }),
         Source: fromAddress,
         Template: templateName,
     });
@@ -158,13 +158,19 @@ module.exports.sendAnEmail = async (req, res) => {
     try {
         const organizationId = req.body.organizationId;
         const result = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
+
+        if (!result?.emailIntegration)
+            return res.send({ message: "Email Integration is not available" })
+
         const {
             accessKeyId,
             secretAccessKey,
             region,
             sendFrom,
             email
-        } = result.emailIntegration;
+        } = result?.emailIntegration;
+
+
 
         const decryptedAccessKeyId = decrypt(accessKeyId);
         const decryptedSecretAccessKey = decrypt(secretAccessKey);
