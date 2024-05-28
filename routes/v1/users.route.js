@@ -12,6 +12,10 @@ router
   .route("/mentors/organizationId/:organizationId")
   .get(userControllers.getAllMentors);
 
+router
+  .route("/mentors/organizationId/:organizationId/role/:role")
+  .get(userControllers.getUsersByRoleAndOrgId);
+
 router.route("/unpaidUsers/checkout").post(userControllers.checkoutPayment);
 
 router.route("/unpaidUsers/verifyPayment").post(userControllers.verifyPayment);
@@ -57,6 +61,8 @@ router.route("/interactions").post(userControllers.addAnInteraction);
 router
   .route("/addOrUpdateUserWithCourse")
   .post(userControllers.addOrUpdateUserWithCourse);
+
+router.route("/addOrUpdateMentor").post(userControllers.addOrUpdateMentor);
 
 router
   .route("/addOrUpdateUserWithBundle")

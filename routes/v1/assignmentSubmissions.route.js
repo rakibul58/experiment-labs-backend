@@ -3,40 +3,38 @@ const assignmentSubmissionControllers = require("../../controllers/assignmentSub
 
 const router = express.Router();
 
+router.route("/").post(assignmentSubmissionControllers.submitAnAssignment);
 
 router
-    .route("/")
-    .post(assignmentSubmissionControllers.submitAnAssignment);
+  .route("/:id")
+  .get(assignmentSubmissionControllers.getAnAssignmentSubmission);
 
+router.route("/:id/result").post(assignmentSubmissionControllers.addResult);
 
-router
-    .route("/:id")
-    .get(assignmentSubmissionControllers.getAnAssignmentSubmission);
-
+router.route("/:id/review").post(assignmentSubmissionControllers.addReview);
 
 router
-    .route("/:id/result")
-    .post(assignmentSubmissionControllers.addResult);
-
-
-router
-    .route("/:id/review")
-    .post(assignmentSubmissionControllers.addReview);
-
+  .route("/organizationId/:organizationId")
+  .get(
+    assignmentSubmissionControllers.getAnAssignmentSubmissionsByOrganizationId
+  );
 
 router
-    .route("/organizationId/:organizationId")
-    .get(assignmentSubmissionControllers.getAnAssignmentSubmissionsByOrganizationId);
-
-
-router
-    .route("/taskId/:taskId/submitterId/:submitterId")
-    .get(assignmentSubmissionControllers.getAssignmentSubmissionsByTaskIdAndSubmitterId);
-
+  .route("/taskId/:taskId/submitterId/:submitterId")
+  .get(
+    assignmentSubmissionControllers.getAssignmentSubmissionsByTaskIdAndSubmitterId
+  );
 
 router
-    .route("/submitterId/:submitterId")
-    .get(assignmentSubmissionControllers.getAssignmentSubmissionsBySubmitterId);
+  .route("/submitterId/:submitterId")
+  .get(assignmentSubmissionControllers.getAssignmentSubmissionsBySubmitterId);
 
+router
+  .route("/submissionId/:submissionId/assign-mentor")
+  .put(assignmentSubmissionControllers.assignMentorToSubmission);
+
+router
+  .route("/assign-mentor")
+  .put(assignmentSubmissionControllers.assignMentorToMultipleSubmissions);
 
 module.exports = router;
