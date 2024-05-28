@@ -58,6 +58,39 @@ module.exports.getAllMentors = async (req, res, next) => {
   res.send(result);
 };
 
+module.exports.getUsersByRoleAndOrgId = async (req, res, next) => {
+  try {
+    const organizationId = req.params.organizationId;
+    const role = req.params.role;
+
+    // Validate role parameter
+    if (!role) {
+      return res.status(400).json({ message: "Role parameter is required" });
+    }
+
+    // Find users by organizationId and role
+    const result = await userCollection
+      .find({
+        organizationId: organizationId,
+        role: role,
+      })
+      .toArray();
+
+    // Check if users are found
+    if (result.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No users found with the specified role" });
+    }
+
+    // Send the result
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching users by role:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports.checkoutPayment = async (req, res, next) => {
   const { price, paymentInstance } = req.body;
   const instance = new Razorpay(paymentInstance);
@@ -1226,6 +1259,56 @@ module.exports.addOrUpdateUserWithCourse = async (req, res) => {
       await userCollection.insertOne({
         ...user,
         courses: [{ courseId, batchId, enrollDate }],
+      });
+
+      res.status(200).json({
+        message: "User added to MongoDB and Firebase successfully",
+      });
+    }
+  } catch (error) {
+    console.error("Error adding or updating user:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+module.exports.addOrUpdateMentor = async (req, res) => {
+  try {
+    const { user } = req.body;
+
+    // Check if the user already exists in the database
+    const existingUser = await userCollection.findOne({ email: user.email });
+
+    if (existingUser) {
+      return res
+        .status(500)
+        .json({ message: "Failed to create user. User already exist!" });
+    } else {
+      // User does not exist, add the user with courses
+      // Generate a custom password
+      const password = passwordUtils.generateCustomPassword(user);
+      user.password = password;
+
+      const firebaseResult = await firebaseUtils.createUserWithEmailAndPassword(
+        user.email,
+        password
+      );
+
+      if (!firebaseResult.success) {
+        console.error(
+          `Failed to create user in Firebase for email: ${user.email}`
+        );
+        return res
+          .status(500)
+          .json({ message: "Failed to create user in Firebase" });
+      }
+
+      const enrollDate = new Date();
+
+      await userCollection.insertOne({
+        ...user,
+        dateCreated: enrollDate,
       });
 
       res.status(200).json({
