@@ -68,4 +68,8 @@ router
   .route("/addOrUpdateUserWithBundle")
   .post(userControllers.addOrUpdateUserWithBundle);
 
+router
+  .route("/learnerId/:learnerId/assign-executionMentor")
+  .put(userControllers.assignMentorToLearner);
+
 module.exports = router;
