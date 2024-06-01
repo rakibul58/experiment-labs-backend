@@ -67,5 +67,9 @@ router.route("/addOrUpdateMentor").post(userControllers.addOrUpdateMentor);
 router
   .route("/addOrUpdateUserWithBundle")
   .post(userControllers.addOrUpdateUserWithBundle);
+router
+  .route("/getAllUserByBatchId/:batchId")
+  .get(userControllers.getAllUserByBatchId);
+
 
 module.exports = router;
