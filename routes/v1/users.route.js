@@ -72,4 +72,8 @@ router
   .get(userControllers.getAllUserByBatchId);
 
 
+router
+  .route("/learnerId/:learnerId/assign-executionMentor")
+  .put(userControllers.assignMentorToLearner);
+
 module.exports = router;

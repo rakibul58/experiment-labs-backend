@@ -1476,3 +1476,34 @@ module.exports.getAllUserByBatchId= async (req, res) => {
       res.status(500).json({ message: 'An error occurred' });
   }
 };
+module.exports.assignMentorToLearner = async (req, res) => {
+  try {
+    const { learnerId } = req.params;
+    const { executionMentors } = req.body;
+
+    // Validate that mentor data is provided
+    if (!executionMentors || executionMentors?.length < 1) {
+      console.log(executionMentors);
+      return res
+        .status(400)
+        .json({ message: "Mentor data should be provided" });
+    }
+
+    // Update the submission document with the mentor data
+    const updateResult = await userCollection.updateOne(
+      { _id: new ObjectId(learnerId) },
+      { $set: { executionMentors: executionMentors } }
+    );
+
+    if (updateResult.modifiedCount === 1) {
+      res.status(200).json({ message: "Mentor assigned successfully" });
+    } else {
+      res
+        .status(404)
+        .json({ message: "Learner not found or mentor not assigned" });
+    }
+  } catch (error) {
+    console.error("Error assigning mentor to learner:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
