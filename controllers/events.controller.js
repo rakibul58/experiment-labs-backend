@@ -1,10 +1,12 @@
 const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const eventCollection = client.db("experiment-labs").collection("events");
-const eventRequestCollection = client.db("experiment-labs").collection("eventRequests");
-const orgCollection = client.db('experiment-labs').collection('organizations');
-const axios = require('axios');
-const qs = require('querystring');
+const eventRequestCollection = client
+  .db("experiment-labs")
+  .collection("eventRequests");
+const orgCollection = client.db("experiment-labs").collection("organizations");
+const axios = require("axios");
+const qs = require("querystring");
 
 module.exports.addAnEvent = async (req, res, next) => {
   const event = req.body;
@@ -37,7 +39,6 @@ module.exports.getEventsByEmail = async (req, res, next) => {
   }
 };
 
-
 module.exports.eventRequest = async (req, res, next) => {
   try {
     const data = req.body;
@@ -47,8 +48,7 @@ module.exports.eventRequest = async (req, res, next) => {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
-
+};
 
 module.exports.fetchEventRequest = async (req, res, next) => {
   try {
@@ -59,25 +59,30 @@ module.exports.fetchEventRequest = async (req, res, next) => {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
-
+};
 
 module.exports.createZoomMeeting = async (req, res, next) => {
-
   try {
     const organizationId = req.params.organizationId;
     const { start_time, duration } = req.body;
-    const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
+    const orgData = await orgCollection.findOne({
+      _id: new ObjectId(organizationId),
+    });
     const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
     const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
 
     const request = await axios.post(
       "https://zoom.us/oauth/token",
-      qs.stringify({ grant_type: 'account_credentials', account_id: accountId }),
+      qs.stringify({
+        grant_type: "account_credentials",
+        account_id: accountId,
+      }),
       {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-        }
+          Authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientSecret}`
+          ).toString("base64")}`,
+        },
       }
     );
 
@@ -89,30 +94,26 @@ module.exports.createZoomMeeting = async (req, res, next) => {
       waiting_room: true,
       timezone: "Asia/Kolkata",
       start_time: start_time,
-      duration: duration
+      duration: duration,
     };
 
     const meetingResponse = await axios.post(
-      'https://api.zoom.us/v2/users/me/meetings',
+      "https://api.zoom.us/v2/users/me/meetings",
       body,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
       }
     );
 
     res.send(meetingResponse?.data);
-
-
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
-
-}
-
+};
 
 // module.exports.updateZoomMeeting = async (req, res, next) => {
 
@@ -154,7 +155,6 @@ module.exports.createZoomMeeting = async (req, res, next) => {
 
 //     res.send(meetingResponse);
 
-
 //   } catch (error) {
 //     console.error("Error:", error);
 //     res.status(500).json({ message: "Internal server error", error });
@@ -162,23 +162,28 @@ module.exports.createZoomMeeting = async (req, res, next) => {
 
 // }
 
-
 module.exports.fetchRecording = async (req, res, next) => {
-
   try {
     const organizationId = req.params.organizationId;
     const { meetingId } = req.body;
-    const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
+    const orgData = await orgCollection.findOne({
+      _id: new ObjectId(organizationId),
+    });
     const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
     const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
 
     const request = await axios.post(
       "https://zoom.us/oauth/token",
-      qs.stringify({ grant_type: 'account_credentials', account_id: accountId }),
+      qs.stringify({
+        grant_type: "account_credentials",
+        account_id: accountId,
+      }),
       {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-        }
+          Authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientSecret}`
+          ).toString("base64")}`,
+        },
       }
     );
 
@@ -189,38 +194,40 @@ module.exports.fetchRecording = async (req, res, next) => {
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
       }
     );
 
     res.send(recodingResponse.data);
-
-
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
-
-}
-
+};
 
 module.exports.updateAccountSettings = async (req, res, next) => {
-
   try {
     const organizationId = req.params.organizationId;
     const data = req.body;
-    const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
+    const orgData = await orgCollection.findOne({
+      _id: new ObjectId(organizationId),
+    });
     const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
     const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
 
     const request = await axios.post(
       "https://zoom.us/oauth/token",
-      qs.stringify({ grant_type: 'account_credentials', account_id: accountId }),
+      qs.stringify({
+        grant_type: "account_credentials",
+        account_id: accountId,
+      }),
       {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-        }
+          Authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientSecret}`
+          ).toString("base64")}`,
+        },
       }
     );
 
@@ -232,22 +239,18 @@ module.exports.updateAccountSettings = async (req, res, next) => {
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
       }
     );
 
     // res.send({accessToken: request.data});
     res.send(settingResponse?.data);
-
-
   } catch (error) {
     console.error("Error:", error.response);
     res.send({ message: "Internal server error", error: error });
   }
-
-}
-
+};
 
 module.exports.updateAnEvent = async (req, res, next) => {
   const { id } = req.params;
@@ -263,4 +266,64 @@ module.exports.updateAnEvent = async (req, res, next) => {
     console.error("Error:", error.response);
     res.send({ message: "Internal server error", error: error });
   }
-}
+};
+
+module.exports.assignMentorToEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { executionMentors } = req.body;
+
+    // Validate that mentor data is provided
+    if (!executionMentors || executionMentors?.length < 1) {
+      console.log(executionMentors);
+      return res
+        .status(400)
+        .json({ message: "Mentor data should be provided" });
+    }
+
+    // Update the submission document with the mentor data
+    const updateResult = await eventCollection.updateOne(
+      { _id: new ObjectId(eventId) },
+      { $set: { executionMentors: executionMentors } }
+    );
+
+    if (updateResult.modifiedCount === 1) {
+      res.status(200).json({ message: "Mentor assigned successfully" });
+    } else {
+      res
+        .status(404)
+        .json({ message: "Learner not found or mentor not assigned" });
+    }
+  } catch (error) {
+    console.error("Error assigning mentor to learner:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.getEventsByExecutionMentorEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email parameter is required" });
+    }
+
+    // Find events where the execution mentor is included in the executionMentors array
+    const events = await eventCollection
+      .find({
+        "executionMentors.mentorEmail": email,
+      })
+      .toArray();
+
+    if (events.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No events found for the given mentor email" });
+    }
+
+    res.status(200).json(events);
+  } catch (error) {
+    console.error("Error fetching events by execution mentor email:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
