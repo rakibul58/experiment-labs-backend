@@ -1463,6 +1463,19 @@ module.exports.getAllPaidInfoWithPayerData = async (req, res) => {
   }
 };
 
+
+module.exports.getAllUserByBatchId= async (req, res) => {
+  try {
+  
+      const batchId = req.params.batchId;
+      const results = await userCollection.find({'courses.batchId':batchId }).toArray();
+
+      res.send(results);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'An error occurred' });
+  }
+};
 module.exports.assignMentorToLearner = async (req, res) => {
   try {
     const { learnerId } = req.params;
