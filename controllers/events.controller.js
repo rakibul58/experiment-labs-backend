@@ -9,6 +9,8 @@ const userCollection = client.db("experiment-labs").collection("users");
 const axios = require("axios");
 const qs = require("querystring");
 const scheduleCollection = client.db("experiment-labs").collection("schedule");
+const axios = require("axios");
+const qs = require("querystring");
 
 module.exports.addAnEvent = async (req, res, next) => {
   const event = req.body;
@@ -274,9 +276,11 @@ module.exports.getSchedulesOfMentorsStudents = async (req, res, next) => {
   try {
     const { mentorId } = req.params;
 
-    const result = await scheduleCollection.find({
-      "executionMentors.mentorId": mentorId,
-    }).toArray();
+    const result = await scheduleCollection
+      .find({
+        "executionMentors.mentorId": mentorId,
+      })
+      .toArray();
 
     res.status(200).json({
       success: true,
@@ -290,5 +294,64 @@ module.exports.getSchedulesOfMentorsStudents = async (req, res, next) => {
       message: "Something went wrong!",
       error,
     });
+  }
+};
+module.exports.assignMentorToEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { executionMentors } = req.body;
+
+    // Validate that mentor data is provided
+    if (!executionMentors || executionMentors?.length < 1) {
+      console.log(executionMentors);
+      return res
+        .status(400)
+        .json({ message: "Mentor data should be provided" });
+    }
+
+    // Update the submission document with the mentor data
+    const updateResult = await eventCollection.updateOne(
+      { _id: new ObjectId(eventId) },
+      { $set: { executionMentors: executionMentors } }
+    );
+
+    if (updateResult.modifiedCount === 1) {
+      res.status(200).json({ message: "Mentor assigned successfully" });
+    } else {
+      res
+        .status(404)
+        .json({ message: "Learner not found or mentor not assigned" });
+    }
+  } catch (error) {
+    console.error("Error assigning mentor to learner:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.getEventsByExecutionMentorEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email parameter is required" });
+    }
+
+    // Find events where the execution mentor is included in the executionMentors array
+    const events = await eventCollection
+      .find({
+        "executionMentors.mentorEmail": email,
+      })
+      .toArray();
+
+    if (events.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No events found for the given mentor email" });
+    }
+
+    res.status(200).json(events);
+  } catch (error) {
+    console.error("Error fetching events by execution mentor email:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -37,5 +37,13 @@ router
 router
   .route("/schedules/mentorId/:mentorId")
   .get(eventControllers.getSchedulesOfMentorsStudents);
+  
+router
+  .route("/eventId/:eventId/assign-executionMentor")
+  .put(eventControllers?.assignMentorToEvent);
+
+router
+  .route("/mentorEmail/:email")
+  .get(eventControllers?.getEventsByExecutionMentorEmail);
 
 module.exports = router;
