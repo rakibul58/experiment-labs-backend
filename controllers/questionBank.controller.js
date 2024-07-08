@@ -79,7 +79,7 @@ module.exports.getQuestionsForQuizAndBatch = async (req, res) => {
     const { quizId, batchId } = req.params;
 
     // Find the quiz by its ID
-    const quiz = await quizCollection.findOne({ _id: ObjectId(quizId) });
+    const quiz = await quizCollection.findOne({ _id: new ObjectId(quizId) });
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found" });
     }
@@ -92,7 +92,7 @@ module.exports.getQuestionsForQuizAndBatch = async (req, res) => {
     // Fetch the actual question data from the questionBank using question IDs
     const questionData = await questionsCollection
       .find({
-        _id: { $in: questionIds.map((questionId) => ObjectId(questionId)) },
+        _id: { $in: questionIds.map((questionId) => new ObjectId(questionId)) },
       })
       .toArray();
 
@@ -115,7 +115,7 @@ module.exports.updateQuestion = async (req, res) => {
 
     // Update the question in the questionBank collection
     const result = await questionsCollection.updateOne(
-      { _id: ObjectId(questionId) },
+      { _id: new ObjectId(questionId) },
       { $set: updatedQuestion }
     );
 
@@ -137,7 +137,7 @@ module.exports.deleteQuestion = async (req, res) => {
 
     // Delete the question from the questionBank collection
     const result = await questionsCollection.deleteOne({
-      _id: ObjectId(questionId),
+      _id: new ObjectId(questionId),
     });
 
     // Check if the deletion was successful

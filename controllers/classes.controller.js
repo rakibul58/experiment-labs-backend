@@ -285,3 +285,60 @@ module.exports.createAClass = async (req, res, next) => {
     });
   }
 };
+
+module.exports.getAllClassesByMentorEmail = async (req, res) => {
+  try {
+    const executionMEmail = req.params.email;
+    const results = await classCollection
+      .find({ "mentors.mentorEmail": executionMEmail })
+      .toArray();
+
+    res.send(results);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
+
+module.exports.updateClassParticipants = async (req, res) => {
+  try {
+    const classId = req.params.classId; // Get class _id from request parameters
+    const newParticipant = req.body; // Get new participant data from the request body
+
+    const result = await classCollection.updateOne(
+      { _id: ObjectId(classId) },
+      { $push: { participants: { participant: newParticipant } } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    res.json({ message: "Participant added successfully", result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+};
+module.exports.deleteClassParticipant = async (req, res) => {
+  try {
+    const classId = req.params.classId; // Get class _id from request parameters
+    const participantId = req.body.participantId; // Get participantId from the request body
+
+    const result = await classCollection.updateOne(
+      { _id: ObjectId(classId) },
+      {
+        $pull: { participants: { "participant.participantId": participantId } },
+      }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    res.json({ message: "Participant removed successfully", result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+};

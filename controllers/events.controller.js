@@ -1,10 +1,14 @@
 const { ObjectId } = require("mongodb");
 const client = require("../utils/dbConnect");
 const eventCollection = client.db("experiment-labs").collection("events");
-const eventRequestCollection = client.db("experiment-labs").collection("eventRequests");
-const orgCollection = client.db('experiment-labs').collection('organizations');
-const axios = require('axios');
-const qs = require('querystring');
+const eventRequestCollection = client
+  .db("experiment-labs")
+  .collection("eventRequests");
+const orgCollection = client.db("experiment-labs").collection("organizations");
+const userCollection = client.db("experiment-labs").collection("users");
+const axios = require("axios");
+const qs = require("querystring");
+const scheduleCollection = client.db("experiment-labs").collection("schedule");
 
 module.exports.addAnEvent = async (req, res, next) => {
   const event = req.body;
@@ -37,7 +41,6 @@ module.exports.getEventsByEmail = async (req, res, next) => {
   }
 };
 
-
 module.exports.eventRequest = async (req, res, next) => {
   try {
     const data = req.body;
@@ -47,8 +50,7 @@ module.exports.eventRequest = async (req, res, next) => {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
-
+};
 
 module.exports.fetchEventRequest = async (req, res, next) => {
   try {
@@ -59,25 +61,30 @@ module.exports.fetchEventRequest = async (req, res, next) => {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
-
+};
 
 module.exports.createZoomMeeting = async (req, res, next) => {
-
   try {
     const organizationId = req.params.organizationId;
     const { start_time, duration } = req.body;
-    const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
+    const orgData = await orgCollection.findOne({
+      _id: new ObjectId(organizationId),
+    });
     const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
     const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
 
     const request = await axios.post(
       "https://zoom.us/oauth/token",
-      qs.stringify({ grant_type: 'account_credentials', account_id: accountId }),
+      qs.stringify({
+        grant_type: "account_credentials",
+        account_id: accountId,
+      }),
       {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-        }
+          Authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientSecret}`
+          ).toString("base64")}`,
+        },
       }
     );
 
@@ -89,30 +96,26 @@ module.exports.createZoomMeeting = async (req, res, next) => {
       waiting_room: true,
       timezone: "Asia/Kolkata",
       start_time: start_time,
-      duration: duration
+      duration: duration,
     };
 
     const meetingResponse = await axios.post(
-      'https://api.zoom.us/v2/users/me/meetings',
+      "https://api.zoom.us/v2/users/me/meetings",
       body,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
       }
     );
 
     res.send(meetingResponse?.data);
-
-
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
-
-}
-
+};
 
 // module.exports.updateZoomMeeting = async (req, res, next) => {
 
@@ -154,7 +157,6 @@ module.exports.createZoomMeeting = async (req, res, next) => {
 
 //     res.send(meetingResponse);
 
-
 //   } catch (error) {
 //     console.error("Error:", error);
 //     res.status(500).json({ message: "Internal server error", error });
@@ -162,23 +164,28 @@ module.exports.createZoomMeeting = async (req, res, next) => {
 
 // }
 
-
 module.exports.fetchRecording = async (req, res, next) => {
-
   try {
     const organizationId = req.params.organizationId;
     const { meetingId } = req.body;
-    const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
+    const orgData = await orgCollection.findOne({
+      _id: new ObjectId(organizationId),
+    });
     const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
     const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
 
     const request = await axios.post(
       "https://zoom.us/oauth/token",
-      qs.stringify({ grant_type: 'account_credentials', account_id: accountId }),
+      qs.stringify({
+        grant_type: "account_credentials",
+        account_id: accountId,
+      }),
       {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-        }
+          Authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientSecret}`
+          ).toString("base64")}`,
+        },
       }
     );
 
@@ -189,38 +196,40 @@ module.exports.fetchRecording = async (req, res, next) => {
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
       }
     );
 
     res.send(recodingResponse.data);
-
-
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error", error });
   }
-
-}
-
+};
 
 module.exports.updateAccountSettings = async (req, res, next) => {
-
   try {
     const organizationId = req.params.organizationId;
     const data = req.body;
-    const orgData = await orgCollection.findOne({ _id: new ObjectId(organizationId) });
+    const orgData = await orgCollection.findOne({
+      _id: new ObjectId(organizationId),
+    });
     const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
     const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
 
     const request = await axios.post(
       "https://zoom.us/oauth/token",
-      qs.stringify({ grant_type: 'account_credentials', account_id: accountId }),
+      qs.stringify({
+        grant_type: "account_credentials",
+        account_id: accountId,
+      }),
       {
         headers: {
-          'Authorization': `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-        }
+          Authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientSecret}`
+          ).toString("base64")}`,
+        },
       }
     );
 
@@ -232,22 +241,18 @@ module.exports.updateAccountSettings = async (req, res, next) => {
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
       }
     );
 
     // res.send({accessToken: request.data});
     res.send(settingResponse?.data);
-
-
   } catch (error) {
     console.error("Error:", error.response);
     res.send({ message: "Internal server error", error: error });
   }
-
-}
-
+};
 
 module.exports.updateAnEvent = async (req, res, next) => {
   const { id } = req.params;
@@ -263,4 +268,27 @@ module.exports.updateAnEvent = async (req, res, next) => {
     console.error("Error:", error.response);
     res.send({ message: "Internal server error", error: error });
   }
-}
+};
+
+module.exports.getSchedulesOfMentorsStudents = async (req, res, next) => {
+  try {
+    const { mentorId } = req.params;
+
+    const result = await scheduleCollection.find({
+      "executionMentors.mentorId": mentorId,
+    }).toArray();
+
+    res.status(200).json({
+      success: true,
+      message: "Schedules Found Successfully!",
+      data: result,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong!",
+      error,
+    });
+  }
+};

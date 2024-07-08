@@ -8,9 +8,7 @@ router
   .get(eventControllers.getAllEvent)
   .post(eventControllers.addAnEvent);
 
-router
-  .route("/request")
-  .post(eventControllers.eventRequest);
+router.route("/request").post(eventControllers.eventRequest);
 
 router
   .route("/request/organizationId/:organizationId")
@@ -25,18 +23,19 @@ router
   .get(eventControllers.getAnEvent)
   .put(eventControllers.updateAnEvent);
 
-router
-  .route("/email/:email")
-  .get(eventControllers.getEventsByEmail);
-
+router.route("/email/:email").get(eventControllers.getEventsByEmail);
 
 router
   .route("/meeting/organizationId/:organizationId")
   .post(eventControllers.createZoomMeeting);
-  // .patch(eventControllers.updateZoomMeeting);
+// .patch(eventControllers.updateZoomMeeting);
 
 router
   .route("/account/organizationId/:organizationId")
   .patch(eventControllers.updateAccountSettings);
+
+router
+  .route("/schedules/mentorId/:mentorId")
+  .get(eventControllers.getSchedulesOfMentorsStudents);
 
 module.exports = router;

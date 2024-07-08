@@ -21,8 +21,6 @@ router
   .route("/courseAndBatch/organizationId/:organizationId")
   .get(courseControllers.getCoursesWithBatchesByOrganizationId);
 
-router
-  .route("/userId/:userId")
-  .get(courseControllers.getCoursesByUserId);
+router.route("/userId/:userId").get(courseControllers.getCoursesByUserId);
 
 module.exports = router;

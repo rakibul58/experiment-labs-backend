@@ -9,8 +9,16 @@ router
   .post(userControllers.saveAUser);
 
 router
+  .route("/students")
+  .get(userControllers.getAllStudents)
+
+router
   .route("/mentors/organizationId/:organizationId")
   .get(userControllers.getAllMentors);
+
+router
+  .route("/mentors/organizationId/:organizationId/role/:role")
+  .get(userControllers.getUsersByRoleAndOrgId);
 
 router.route("/unpaidUsers/checkout").post(userControllers.checkoutPayment);
 
@@ -58,8 +66,18 @@ router
   .route("/addOrUpdateUserWithCourse")
   .post(userControllers.addOrUpdateUserWithCourse);
 
+router.route("/addOrUpdateMentor").post(userControllers.addOrUpdateMentor);
+
 router
   .route("/addOrUpdateUserWithBundle")
   .post(userControllers.addOrUpdateUserWithBundle);
+router
+  .route("/getAllUserByBatchId/:batchId")
+  .get(userControllers.getAllUserByBatchId);
+
+
+router
+  .route("/learnerId/:learnerId/assign-executionMentor")
+  .put(userControllers.assignMentorToLearner);
 
 module.exports = router;

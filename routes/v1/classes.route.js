@@ -17,6 +17,12 @@ router
 router
     .route('/recordings/meetingId/:meetingId')
     .post(classControllers.getARecording);
+router
+    .route('/updateParticipants/:classId')
+    .patch(classControllers.updateClassParticipants);
+router
+    .route('/deleteParticipants/:classId')
+    .patch(classControllers.deleteClassParticipant);
 
 
 module.exports = router;
