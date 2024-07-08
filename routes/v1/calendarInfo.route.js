@@ -3,13 +3,12 @@ const calenderInfoController = require("../../controllers/calenderInfo.controlle
 
 const router = express.Router();
 
+router.route("/").post(calenderInfoController.syncCalendarToDB);
+
+router.route("/events").put(calenderInfoController.updateEvents);
+
 router
-  .route("/updateOrInsertCalendarInfo/email/:email")
-  .post(calenderInfoController.updateOrInsertCalendarInfo);
-router
-  .route("/getCalendarInfoByEmail/email/:email")
+  .route("/email/:email")
   .get(calenderInfoController.getCalendarInfoByEmail);
 
-
-
-  module.exports = router;
+module.exports = router;

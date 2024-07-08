@@ -6,7 +6,8 @@ const router = express.Router();
 router
     .route("/")
     .get(testControllers.getAllTest)
-    .post(testControllers.saveATest);
+    .post(testControllers.saveATest)
+    .put(testControllers.updateAllTests);
 
 router
     .route("/:id")

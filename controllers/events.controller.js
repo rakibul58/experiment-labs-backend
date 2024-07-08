@@ -5,6 +5,10 @@ const eventRequestCollection = client
   .db("experiment-labs")
   .collection("eventRequests");
 const orgCollection = client.db("experiment-labs").collection("organizations");
+const userCollection = client.db("experiment-labs").collection("users");
+const axios = require("axios");
+const qs = require("querystring");
+const scheduleCollection = client.db("experiment-labs").collection("schedule");
 const axios = require("axios");
 const qs = require("querystring");
 
@@ -268,6 +272,30 @@ module.exports.updateAnEvent = async (req, res, next) => {
   }
 };
 
+module.exports.getSchedulesOfMentorsStudents = async (req, res, next) => {
+  try {
+    const { mentorId } = req.params;
+
+    const result = await scheduleCollection
+      .find({
+        "executionMentors.mentorId": mentorId,
+      })
+      .toArray();
+
+    res.status(200).json({
+      success: true,
+      message: "Schedules Found Successfully!",
+      data: result,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong!",
+      error,
+    });
+  }
+};
 module.exports.assignMentorToEvent = async (req, res) => {
   try {
     const { eventId } = req.params;

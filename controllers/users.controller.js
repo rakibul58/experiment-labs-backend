@@ -1463,17 +1463,17 @@ module.exports.getAllPaidInfoWithPayerData = async (req, res) => {
   }
 };
 
-
-module.exports.getAllUserByBatchId= async (req, res) => {
+module.exports.getAllUserByBatchId = async (req, res) => {
   try {
-  
-      const batchId = req.params.batchId;
-      const results = await userCollection.find({'courses.batchId':batchId }).toArray();
+    const batchId = req.params.batchId;
+    const results = await userCollection
+      .find({ "courses.batchId": batchId })
+      .toArray();
 
-      res.send(results);
+    res.send(results);
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'An error occurred' });
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
   }
 };
 module.exports.assignMentorToLearner = async (req, res) => {
@@ -1505,5 +1505,25 @@ module.exports.assignMentorToLearner = async (req, res) => {
   } catch (error) {
     console.error("Error assigning mentor to learner:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.getAllStudents = async (req, res) => {
+  try {
+    req.query.role = "user";
+    const result = await userCollection.find(req.query).toArray();
+
+    res.status(200).json({
+      success: true,
+      message: "Users Found Successfully!",
+      data: result,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong!",
+      error,
+    });
   }
 };

@@ -36,6 +36,7 @@ const earningCategoryRoutes = require("./routes/v1/earningCategories.route");
 const eventRoutes = require("./routes/v1/events.route");
 const assignmentSubmissionRoutes = require("./routes/v1/assignmentSubmissions.route");
 const classRoutes = require("./routes/v1/classes.route");
+const classRoutesV2 = require("./routes/v2/classes.route");
 const redemptionCategoryRoutes = require("./routes/v1/redemptionCategories.route");
 const redemptionAccessRoutes = require("./routes/v1/redemptionAccesses.route");
 const feedbackCategoriesRoutes = require("./routes/v1/feedbackCategories.route");
@@ -66,7 +67,9 @@ app.get("/", (req, res) => {
 // Error handler middleware
 app.use(errorHandler);
 
-// Attach your routes after the error handler
+// Attach your routes after the error handler 
+
+//v1
 app.use("/api/v1/test", testRoutes);
 app.use("/api/v1/sendMail", mailRoutes);
 app.use("/api/v1/users", userRoutes);
@@ -82,6 +85,7 @@ app.use("/api/v1/earningCategories", earningCategoryRoutes);
 app.use("/api/v1/events", eventRoutes);
 app.use("/api/v1/assignmentSubmissions", assignmentSubmissionRoutes);
 app.use("/api/v1/classes", classRoutes);
+app.use("/api/v2/classes", classRoutesV2);
 app.use("/api/v1/redemptionCategories", redemptionCategoryRoutes);
 app.use("/api/v1/redemptionAccesses", redemptionAccessRoutes);
 app.use("/api/v1/feedbackCategories", feedbackCategoriesRoutes);
