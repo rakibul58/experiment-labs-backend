@@ -9,8 +9,6 @@ const userCollection = client.db("experiment-labs").collection("users");
 const axios = require("axios");
 const qs = require("querystring");
 const scheduleCollection = client.db("experiment-labs").collection("schedule");
-const axios = require("axios");
-const qs = require("querystring");
 
 module.exports.addAnEvent = async (req, res, next) => {
   const event = req.body;
@@ -296,6 +294,7 @@ module.exports.getSchedulesOfMentorsStudents = async (req, res, next) => {
     });
   }
 };
+
 module.exports.assignMentorToEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
