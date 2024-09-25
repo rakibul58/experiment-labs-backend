@@ -66,7 +66,7 @@ module.exports.fetchEventRequest = async (req, res, next) => {
 module.exports.createZoomMeeting = async (req, res, next) => {
   try {
     const organizationId = req.params.organizationId;
-    const { start_time, duration } = req.body;
+    const { start_time, duration, studentName, courseName } = req.body;
     const orgData = await orgCollection.findOne({
       _id: new ObjectId(organizationId),
     });
@@ -91,12 +91,16 @@ module.exports.createZoomMeeting = async (req, res, next) => {
     const accessToken = request.data.access_token;
 
     const body = {
-      topic: "Doubt Clearing Session",
+      topic: `Session with ${studentName} on ${courseName}`,
       type: 2,
       waiting_room: true,
       timezone: "Asia/Kolkata",
       start_time: start_time,
       duration: duration,
+      settings: {
+        join_before_host: true, // Allow participants to join before the host
+        waiting_room: false // Disable waiting room if you want the meeting to start without any manual intervention
+      }
     };
 
     const meetingResponse = await axios.post(
@@ -111,6 +115,56 @@ module.exports.createZoomMeeting = async (req, res, next) => {
     );
 
     res.send(meetingResponse?.data);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
+
+module.exports.deleteZoomMeeting = async (req, res, next) => {
+  try {
+    const organizationId = req.params.organizationId;
+    const meetingId = req.params.meetingId;
+    const orgData = await orgCollection.findOne({
+      _id: new ObjectId(organizationId),
+    });
+    const scheduleZoomCredentials = orgData?.scheduleZoomCredentials;
+    const { accountId, clientId, clientSecret } = scheduleZoomCredentials;
+
+    const request = await axios.post(
+      "https://zoom.us/oauth/token",
+      qs.stringify({
+        grant_type: "account_credentials",
+        account_id: accountId,
+      }),
+      {
+        headers: {
+          Authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientSecret}`
+          ).toString("base64")}`,
+        },
+      }
+    );
+
+    const accessToken = request.data.access_token;
+    const meetingResponse = await axios.delete(
+      `https://api.zoom.us/v2/meetings/${meetingId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    // console.log("meeting response ",meetingResponse);
+    // console.log("meeting response ",meetingResponse?.status);
+    if (meetingResponse?.status == 204) {
+      console.log("inside if")
+      res.status(200).json({success: true, message: "Meeting successfully deleted" });
+    } else {
+      res.status(400).json({success: false, message: "Failed to delete meeting" });
+    }
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ message: "Internal server error", error });

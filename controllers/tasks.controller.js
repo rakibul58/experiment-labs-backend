@@ -210,7 +210,58 @@ module.exports.getTasksByTaskTypeAndTaskId = async (req, res, next) => {
       result = await readingCollection.findOne(filter);
       break;
     case "quizes":
-      result = await quizCollection.findOne(filter);
+      const newFilter = {
+        _id: new ObjectId(taskId),
+        "participants.participant.email": req.query.email,
+      };
+      result = await quizCollection.findOne(newFilter, {
+        projection: {
+          participants: {
+            $elemMatch: { "participant.email": req.query.email },
+          },
+          taskName: 1,
+          quizName: 1,
+          quizDescription: 1,
+          quizAttempts: 1,
+          shuffleWithInQuestions: 1,
+          points: 1,
+          isMarksTotalPoints: 1,
+          marks: 1,
+          totalPoints: 1,
+          gradeToPass: 1,
+          gradeToPassValueIn: 1,
+          skillParameterData: 1,
+          earningParameterData: 1,
+          chapterId: 1,
+          questions: 1,
+          batches: 1,
+          taskDrip: 1,
+        },
+      });
+      if (!result) {
+        result = await quizCollection.findOne(filter, {
+          projection: {
+            participants: [],
+            taskName: 1,
+            quizName: 1,
+            quizDescription: 1,
+            quizAttempts: 1,
+            shuffleWithInQuestions: 1,
+            points: 1,
+            isMarksTotalPoints: 1,
+            marks: 1,
+            totalPoints: 1,
+            gradeToPass: 1,
+            gradeToPassValueIn: 1,
+            skillParameterData: 1,
+            earningParameterData: 1,
+            chapterId: 1,
+            questions: 1,
+            batches: 1,
+            taskDrip: 1,
+          },
+        });
+      }
       break;
     case "liveTests":
       result = await liveTestCollection.findOne(filter);
@@ -366,6 +417,89 @@ module.exports.deleteATask = async (req, res, next) => {
   res.status(200).json({ deleteResult, result });
 };
 
+// module.exports.updateATask = async (req, res, next) => {
+//   const taskType = req.params.taskType;
+//   const taskId = req.params.taskId;
+//   const updatedTask = req.body;
+
+//   let updateResult, result;
+
+//   switch (taskType) {
+//     case "assignments":
+//       updateResult = await assignmentCollection.updateOne(
+//         { _id: new ObjectId(taskId) },
+//         { $set: updatedTask }
+//       );
+//       break;
+//     case "classes":
+//       updateResult = await classCollection.updateOne(
+//         { _id: new ObjectId(taskId) },
+//         { $set: updatedTask }
+//       );
+//       break;
+//     case "readings":
+//       updateResult = await readingCollection.updateOne(
+//         { _id: new ObjectId(taskId) },
+//         { $set: updatedTask }
+//       );
+//       break;
+//     case "quizes":
+//       updateResult = await quizCollection.updateOne(
+//         { _id: new ObjectId(taskId) },
+//         { $set: updatedTask }
+//       );
+//       break;
+//     case "liveTests":
+//       updateResult = await liveTestCollection.updateOne(
+//         { _id: new ObjectId(taskId) },
+//         { $set: updatedTask }
+//       );
+//       break;
+//     case "videos":
+//       updateResult = await videoCollection.updateOne(
+//         { _id: new ObjectId(taskId) },
+//         { $set: updatedTask }
+//       );
+//       break;
+//     case "audios":
+//       updateResult = await audioCollection.updateOne(
+//         { _id: new ObjectId(taskId) },
+//         { $set: updatedTask }
+//       );
+//       break;
+//     case "files":
+//       updateResult = await fileCollection.updateOne(
+//         { _id: new ObjectId(taskId) },
+//         { $set: updatedTask }
+//       );
+//     case "schedule":
+//       updateResult = await scheduleCollection.updateOne(
+//         { _id: new ObjectId(taskId) },
+//         { $set: updatedTask }
+//       );
+//       break;
+//     default:
+//       return res.status(400).json({ error: "Invalid task type" });
+//   }
+
+//   console.log(updateResult.modifiedCount);
+
+//   // Update chapter's task info as well
+//   if (updateResult.modifiedCount > 0) {
+//     const chapterFilter = { "tasks.taskId": taskId };
+//     const chapterUpdate = {
+//       $set: {
+//         "tasks.$.taskName": updatedTask.taskName,
+//         "tasks.$.batches": updatedTask.batches,
+//         "tasks.$.taskDrip": updatedTask.taskDrip,
+//       },
+//     };
+//     result = await chapterCollection.updateOne(chapterFilter, chapterUpdate);
+//   }
+
+//   res.status(200).json({ updateResult, result });
+// };
+
 module.exports.updateATask = async (req, res, next) => {
   const taskType = req.params.taskType;
   const taskId = req.params.taskId;
@@ -431,10 +565,11 @@ module.exports.updateATask = async (req, res, next) => {
       return res.status(400).json({ error: "Invalid task type" });
   }
 
-  console.log(updateResult.modifiedCount);
+  console.log({updateResult, taskDrip: updatedTask.taskDrip, isInside: false});
 
   // Update chapter's task info as well
-  if (updateResult.modifiedCount > 0) {
+  if (updateResult.acknowledged) {
+    console.log({updateResult, taskDrip: updatedTask.taskDrip, isInside: true});
     const chapterFilter = { "tasks.taskId": taskId };
     const chapterUpdate = {
       $set: {
@@ -448,6 +583,7 @@ module.exports.updateATask = async (req, res, next) => {
 
   res.status(200).json({ updateResult, result });
 };
+
 
 module.exports.getTasksByTaskTypeAndChapterId = async (req, res, next) => {
   const taskType = req.params.taskType;
@@ -687,47 +823,9 @@ module.exports.addTaskCompletionDetails = async (req, res, next) => {
       { $set: { participants: taskDocument.participants } }
     );
 
-    // if (result) {
-    //   // Search for the user in userCollection using their email
-    //   const user = await userCollection.findOne({
-    //     email: participantTask.participant.email,
-    //   });
-
-    //   if (user) {
-    //     // Check if the user already has a course entry with the same courseId
-    //     const existingCourseIndex = user.courses
-    //       ? user.courses.findIndex(
-    //         (course) => course.courseId === chapterDocument?.courseId
-    //       )
-    //       : -1;
-
-    //     if (existingCourseIndex !== -1) {
-    //       // User has an existing course entry, update completedTask count
-    //       user.courses[existingCourseIndex].completedTask++;
-    //     } else {
-    //       // User doesn't have a course entry for this courseId, create a new one
-    //       const newCourseEntry = {
-    //         courseId: chapterDocument?.courseId,
-    //         // courseName: courseName,
-    //         completedTask: 1, // Initialize completedTask to 1 for the new course
-    //       };
-    //       if (!user.courses) {
-    //         user.courses = []; // Initialize the courses array if it doesn't exist
-    //       }
-    //       user.courses.push(newCourseEntry);
-    //     }
-
-    //     // Update the user document in userCollection
-    //     await userCollection.updateOne(
-    //       { email: participantTask.participant.email },
-    //       { $set: { courses: user.courses } }
-    //     );
-    //   }
-
-    // }
     res.status(200).json(result);
   } catch (error) {
-    console.error(error);
+    console.error({ error });
     res.status(500).json({ message: "Internal server error" });
   }
 };

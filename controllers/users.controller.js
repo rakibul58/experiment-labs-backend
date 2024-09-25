@@ -31,6 +31,16 @@ module.exports.getAnUserByEmail = async (req, res, next) => {
   }
 };
 
+module.exports.getAllUser = async (req, res, next) => {
+  try {
+    const users = await userCollection.find().toArray();
+    res.send(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
 module.exports.saveAUser = async (req, res, next) => {
   const user = req.body;
 
