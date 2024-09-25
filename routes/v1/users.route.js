@@ -8,9 +8,9 @@ router
   .get(userControllers.getAnUserByEmail)
   .post(userControllers.saveAUser);
 
-router
-  .route("/students")
-  .get(userControllers.getAllStudents)
+router.route("/all").get(userControllers.getAllUser);
+
+router.route("/students").get(userControllers.getAllStudents);
 
 router
   .route("/mentors/organizationId/:organizationId")
@@ -74,7 +74,6 @@ router
 router
   .route("/getAllUserByBatchId/:batchId")
   .get(userControllers.getAllUserByBatchId);
-
 
 router
   .route("/learnerId/:learnerId/assign-executionMentor")

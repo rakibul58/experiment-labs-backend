@@ -52,6 +52,7 @@ const notificationsRoutes = require("./routes/v1/notifications.route");
 const bundleRoutes = require("./routes/v1/bundles.route");
 const uploadFileRoutes = require("./routes/v1/uploadFile.route");
 const questionBankRoutes = require("./routes/v1/questionBank.route");
+const authRoutes = require("./routes/v1/auth.route");
 
 //Calling Functions
 startCronJob();
@@ -67,7 +68,7 @@ app.get("/", (req, res) => {
 // Error handler middleware
 app.use(errorHandler);
 
-// Attach your routes after the error handler 
+// Attach your routes after the error handler
 
 //v1
 app.use("/api/v1/test", testRoutes);
@@ -100,6 +101,7 @@ app.use("/api/v1/notifications", notificationsRoutes);
 app.use("/api/v1/bundles", bundleRoutes);
 app.use("/api/v1/uploadFile", uploadFileRoutes);
 app.use("/api/v1/questionBank", questionBankRoutes);
+app.use("/api/v1/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("Experiment Labs server is running");

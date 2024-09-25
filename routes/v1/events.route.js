@@ -28,7 +28,10 @@ router.route("/email/:email").get(eventControllers.getEventsByEmail);
 router
   .route("/meeting/organizationId/:organizationId")
   .post(eventControllers.createZoomMeeting);
-// .patch(eventControllers.updateZoomMeeting);
+  
+router
+  .route("/deleteMeeting/organizationId/:organizationId/meetingId/:meetingId")
+  .delete(eventControllers.deleteZoomMeeting);
 
 router
   .route("/account/organizationId/:organizationId")
